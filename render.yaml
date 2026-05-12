@@ -2,14 +2,12 @@ services:
   - type: web
     name: smarttrack-kpi
     env: python
-    buildCommand: pip install --no-cache-dir -r requirements.txt
+    pythonVersion: 3.11.7
+    buildCommand: pip install --upgrade setuptools wheel && pip install --no-cache-dir -r requirements.txt
     startCommand: bash start.sh
     plan: free
 
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11.7"
-
       - key: SESSION_SECRET
         generateValue: true
 
