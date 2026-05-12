@@ -1,0 +1,35 @@
+# Files to ignore during Render build
+
+# Training/ML scripts (not needed in production)
+models/arima_model.py
+models/rf_model.py
+models/seed_data.py
+evaluate.py
+synthetic_data.py
+
+# Development files
+*.ipynb
+.vscode
+.idea
+*.egg-info
+dist/
+build/
+
+# Data files (optional - keep if needed)
+data/
+
+# Cache
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+
+# Environment
+venv/
+.venv/
+env/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

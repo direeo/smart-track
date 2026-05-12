@@ -3,16 +3,21 @@ services:
     name: smarttrack-kpi
     env: python
     pythonVersion: 3.11.7
-    buildCommand: pip install --upgrade setuptools wheel && pip install --no-cache-dir -r requirements.txt
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install --no-cache-dir -r requirements.txt
     startCommand: bash start.sh
     plan: free
-
+    
+    maxShutdownDelay: 10
+    
     envVars:
       - key: SESSION_SECRET
         generateValue: true
 
       - key: DATABASE_PATH
         value: /opt/render/project/src/models/smarttrack.db
+        
+      - key: PYTHONUNBUFFERED
+        value: "true"
 
     disk:
       name: smarttrack-disk
