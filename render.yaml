@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: smarttrack-kpi
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    plan: free
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+
+      - key: SESSION_SECRET
+        generateValue: true
+
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/models/smarttrack.db
+
+    disk:
+      name: smarttrack-disk
+      mountPath: /opt/render/project/src/models
+      sizeGB: 1
