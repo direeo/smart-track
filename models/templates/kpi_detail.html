@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}KPI Details - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ kpi['name'] }}</h2>
+    <p><strong>Target Value:</strong> {{ kpi['target_value'] }}</p>
+    <p><strong>Current Value:</strong> {{ kpi['current_value'] or 'Not yet updated' }}</p>
+    <p><strong>Last Updated:</strong> {{ kpi['last_updated'] or 'Never' }}</p>
+    <p><strong>Project:</strong> {{ kpi['project_name'] }}</p>
+    
+    <h3>Historical Data</h3>
+    {% if updates %}
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Value</th>
+            <th>Note</th>
+        </tr>
+        {% for update in updates %}
+        <tr>
+            <td>{{ update['updated_at'] }}</td>
+            <td>{{ update['value'] }}</td>
+            <td>{{ update['note'] or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No historical updates yet.</p>
+    {% endif %}
+    
+    {% if user['role'] == 'employee' %}
+    <h3>Update KPI</h3>
+    <form method="post" action="/employee/kpi/{{ kpi['id'] }}/update">
+        <div class="form-group">
+            <label for="value">New Value:</label>
+            <input type="number" id="value" name="value" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="note">Note:</label>
+            <textarea id="note" name="note" rows="3"></textarea>
+        </div>
+        <input type="submit" value="Update KPI">
+    </form>
+    {% endif %}
+    
+    <p><a href="javascript:history.back()">Back</a></p>
+</div>
+{% endblock %}

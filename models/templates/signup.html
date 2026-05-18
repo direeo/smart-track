@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Signup - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto;">
+    <h2>Join Company</h2>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label for="company_code">Company Code:</label>
+            <input type="text" id="company_code" name="company_code" placeholder="Ask your admin for the code" required onchange="loadDepartments()">
+            <div id="company_info" style="margin-top: 10px;"></div>
+        </div>
+        <div class="form-group">
+            <label for="department_id">Department:</label>
+            <select id="department_id" name="department_id" required>
+                <option value="">Select a department</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="full_name">Full Name:</label>
+            <input type="text" id="full_name" name="full_name" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <input type="submit" value="Join Company">
+    </form>
+    <p><a href="/register">Create new company account</a> | <a href="/login">Login</a></p>
+</div>
+
+<script>
+function loadDepartments() {
+    const code = document.getElementById('company_code').value.toUpperCase();
+    const url = `/api/company-departments?code=${code}`;
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('company_info').innerHTML = '<div class="error">' + data.error + '</div>';
+                document.getElementById('department_id').innerHTML = '<option value="">Select a department</option>';
+            } else {
+                document.getElementById('company_info').innerHTML = '<strong>Company:</strong> ' + data.company_name;
+                let deptHTML = '<option value="">Select a department</option>';
+                data.departments.forEach(d => {
+                    deptHTML += `<option value="${d.id}">${d.name}</option>`;
+                });
+                document.getElementById('department_id').innerHTML = deptHTML;
+            }
+        })
+        .catch(e => {
+            document.getElementById('company_info').innerHTML = '<div class="error">Error loading company</div>';
+        });
+}
+</script>
+{% endblock %}

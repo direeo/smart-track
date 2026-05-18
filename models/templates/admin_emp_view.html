@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Employee View - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ employee['full_name'] }}</h2>
+    <p><a href="/admin/dashboard">Back to Admin Dashboard</a></p>
+    
+    <h3>Employee Details</h3>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Username</td>
+            <td>{{ employee['username'] }}</td>
+        </tr>
+        <tr>
+            <td>Full Name</td>
+            <td>{{ employee['full_name'] }}</td>
+        </tr>
+        <tr>
+            <td>Department</td>
+            <td>{{ employee['department_name'] }}</td>
+        </tr>
+        <tr>
+            <td>Role</td>
+            <td>{{ employee['role'] }}</td>
+        </tr>
+    </table>
+    
+    <h3>KPI Performance</h3>
+    {% if kpis %}
+    <table>
+        <tr>
+            <th>KPI Name</th>
+            <th>Project</th>
+            <th>Target</th>
+            <th>Current</th>
+            <th>Status</th>
+        </tr>
+        {% for kpi in kpis %}
+        <tr>
+            <td>{{ kpi['name'] }}</td>
+            <td>{{ kpi['project_name'] }}</td>
+            <td>{{ kpi['target_value'] }}</td>
+            <td>{{ kpi['current_value'] or 'N/A' }}</td>
+            <td>
+                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
+                <span style="color: #27ae60;">✓ Achieved</span>
+                {% else %}
+                <span style="color: #f39c12;">● In Progress</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No KPIs assigned.</p>
+    {% endif %}
+    
+    <h3>Recent Updates</h3>
+    {% if recent_updates %}
+    <table>
+        <tr>
+            <th>KPI</th>
+            <th>Value</th>
+            <th>Date</th>
+            <th>Note</th>
+        </tr>
+        {% for update in recent_updates %}
+        <tr>
+            <td>{{ update['kpi_name'] }}</td>
+            <td>{{ update['value'] }}</td>
+            <td>{{ update['updated_at'] }}</td>
+            <td>{{ update['note'] or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No recent updates.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Manager Dashboard</h2>
+    <p>Welcome, <strong>{{ user['full_name'] }}</strong>!</p>
+    
+    <div style="margin: 20px 0;">
+        <a href="/manager/create-project"><button>Create Project</button></a>
+    </div>
+    
+    <h3>My Projects</h3>
+    {% if projects %}
+    <table>
+        <tr>
+            <th>Project Name</th>
+            <th>Description</th>
+            <th>Team Members</th>
+            <th>Action</th>
+        </tr>
+        {% for project in projects %}
+        <tr>
+            <td>{{ project['name'] }}</td>
+            <td>{{ project['description'] }}</td>
+            <td>{{ project['member_count'] }}</td>
+            <td><a href="/manager/project/{{ project['id'] }}">Manage</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No projects yet. <a href="/manager/create-project">Create one</a></p>
+    {% endif %}
+    
+    <h3>Team Performance</h3>
+    {% if team_members %}
+    <table>
+        <tr>
+            <th>Team Member</th>
+            <th>KPIs Completed</th>
+            <th>KPIs Missed</th>
+            <th>Performance %</th>
+            <th>Status</th>
+        </tr>
+        {% for member in team_members %}
+        <tr>
+            <td>{{ member['full_name'] }}</td>
+            <td>{{ member['kpis_completed'] }}</td>
+            <td>{{ member['kpis_missed'] }}</td>
+            <td>{{ member['performance_pct'] }}%</td>
+            <td>
+                {% if member['performance_pct'] >= 80 %}
+                <span style="color: #27ae60;">✓ Excellent</span>
+                {% elif member['performance_pct'] >= 60 %}
+                <span style="color: #f39c12;">● Good</span>
+                {% else %}
+                <span style="color: #e74c3c;">✗ Needs Attention</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No team members assigned yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

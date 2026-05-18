@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Set KPI - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 30px auto;">
+    <h2>Set KPI for Project: {{ project['name'] }}</h2>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label for="name">KPI Name:</label>
+            <input type="text" id="name" name="name" placeholder="e.g., Sales Revenue, Bug Fix Rate" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="target_value">Target Value:</label>
+            <input type="number" id="target_value" name="target_value" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="unit">Unit of Measurement:</label>
+            <input type="text" id="unit" name="unit" placeholder="e.g., $, %, units" value="units">
+        </div>
+        <div class="form-group">
+            <label for="employee_id">Assign to Employee:</label>
+            <select id="employee_id" name="employee_id" required>
+                <option value="">Select an employee</option>
+                {% for emp in employees %}
+                <option value="{{ emp['id'] }}">{{ emp['full_name'] }} ({{ emp['department_name'] }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="due_date">Due Date:</label>
+            <input type="date" id="due_date" name="due_date">
+        </div>
+        <button type="submit">Create KPI</button>
+        <a href="/manager/project/{{ project['id'] }}"><button type="button" class="btn-secondary">Cancel</button></a>
+    </form>
+</div>
+{% endblock %}

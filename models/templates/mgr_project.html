@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Project View - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ project['name'] }}</h2>
+    <p><strong>Description:</strong> {{ project['description'] }}</p>
+    <p><a href="/manager/dashboard">Back to Dashboard</a></p>
+    
+    <div style="margin: 20px 0;">
+        <a href="/manager/project/{{ project['id'] }}/set-kpi"><button>Add KPI</button></a>
+        <a href="/manager/project/{{ project['id'] }}/edit"><button class="btn-secondary">Edit</button></a>
+    </div>
+    
+    <h3>Project Team</h3>
+    {% if team_members %}
+    <table>
+        <tr>
+            <th>Member Name</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>KPIs</th>
+        </tr>
+        {% for member in team_members %}
+        <tr>
+            <td>{{ member['full_name'] }}</td>
+            <td>{{ member['department_name'] }}</td>
+            <td>{{ member['role'] }}</td>
+            <td><a href="/admin/employee/{{ member['id'] }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No team members assigned.</p>
+    {% endif %}
+    
+    <h3>KPIs</h3>
+    {% if kpis %}
+    <table>
+        <tr>
+            <th>KPI Name</th>
+            <th>Target</th>
+            <th>Current</th>
+            <th>Assigned To</th>
+            <th>Status</th>
+        </tr>
+        {% for kpi in kpis %}
+        <tr>
+            <td><a href="/manager/kpi/{{ kpi['id'] }}">{{ kpi['name'] }}</a></td>
+            <td>{{ kpi['target_value'] }}</td>
+            <td>{{ kpi['current_value'] or 'N/A' }}</td>
+            <td>{{ kpi['employee_name'] }}</td>
+            <td>
+                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
+                <span style="color: #27ae60;">✓ Achieved</span>
+                {% else %}
+                <span style="color: #f39c12;">● In Progress</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No KPIs yet. <a href="/manager/project/{{ project['id'] }}/set-kpi">Add one</a></p>
+    {% endif %}
+</div>
+{% endblock %}

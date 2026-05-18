@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Departments - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Manage Departments</h2>
+    <p><a href="/admin/dashboard">Back to Admin Dashboard</a></p>
+    
+    <div style="margin: 20px 0;">
+        <a href="/admin/add-department"><button>Add New Department</button></a>
+    </div>
+    
+    {% if departments %}
+    <table>
+        <tr>
+            <th>Department Name</th>
+            <th>Employees</th>
+            <th>Managers</th>
+            <th>Action</th>
+        </tr>
+        {% for dept in departments %}
+        <tr>
+            <td>{{ dept['name'] }}</td>
+            <td>{{ dept['employee_count'] }}</td>
+            <td>{{ dept['manager_count'] }}</td>
+            <td>
+                <a href="/admin/department/{{ dept['id'] }}/edit"><button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;">Edit</button></a>
+                <a href="/admin/department/{{ dept['id'] }}/delete" onclick="return confirm('Are you sure?');"><button class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Delete</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No departments yet. <a href="/admin/add-department">Create one</a></p>
+    {% endif %}
+</div>
+{% endblock %}

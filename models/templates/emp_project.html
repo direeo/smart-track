@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Project - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ project['name'] }}</h2>
+    <p><strong>Description:</strong> {{ project['description'] }}</p>
+    <p><strong>Manager:</strong> {{ project['manager_name'] }}</p>
+    <p><a href="/employee/dashboard">Back to Dashboard</a></p>
+    
+    <h3>Project KPIs</h3>
+    {% if kpis %}
+    <table>
+        <tr>
+            <th>KPI Name</th>
+            <th>Target</th>
+            <th>Current</th>
+            <th>Status</th>
+        </tr>
+        {% for kpi in kpis %}
+        <tr>
+            <td><a href="/employee/kpi/{{ kpi['id'] }}">{{ kpi['name'] }}</a></td>
+            <td>{{ kpi['target_value'] }}</td>
+            <td>{{ kpi['current_value'] or 'N/A' }}</td>
+            <td>
+                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
+                <span style="color: #27ae60;">✓ Achieved</span>
+                {% else %}
+                <span style="color: #f39c12;">● In Progress</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No KPIs for this project yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

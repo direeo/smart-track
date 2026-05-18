@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Add Department - SmartTrack{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto;">
+    <h2>Add New Department</h2>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="success">Department created successfully! <a href="/admin/manage-departments">View all departments</a></div>
+    {% endif %}
+    
+    {% if not success %}
+    <form method="post">
+        <div class="form-group">
+            <label for="name">Department Name:</label>
+            <input type="text" id="name" name="name" placeholder="e.g., Engineering, Sales, HR" required>
+        </div>
+        <button type="submit">Create Department</button>
+        <a href="/admin/manage-departments"><button type="button" class="btn-secondary">Cancel</button></a>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
