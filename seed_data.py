@@ -8,11 +8,14 @@ Creates TWO separate organisations:
   2. Pinnacle Consulting Ltd (code: PINCO2) — Consulting company
 """
 
+import os
 import sqlite3, hashlib, sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
-DB_PATH = Path("smarttrack.db")
+DB_PATH = Path(os.getenv("DATABASE_PATH", Path(__file__).resolve().parent / "models" / "smarttrack.db"))
+
+print(f"Using database: {DB_PATH}")
 
 def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
