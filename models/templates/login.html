@@ -1,19 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}Login - SmartTrack{% endblock %}
+{% block body_class %}auth-page{% endblock %}
 
 {% block content %}
 <div class="auth-frame">
     <div class="auth-side auth-side-left">
         <div class="auth-side-content">
             <span class="eyebrow">SmartTrack</span>
-            <h1>Welcome Back</h1>
-            <p>Securely log in to access your KPI dashboard, monitor team progress, and make data-driven decisions.</p>
-            <ul class="feature-list">
-                <li>Clean project overview</li>
-                <li>Live KPI status cards</li>
-                <li>Fast team performance insights</li>
-            </ul>
+            <h1>Smarter KPI management for every team</h1>
+            <p>Sign in to your workspace to track goals, review progress, and keep the whole team aligned with real-time insights.</p>
+            <div class="hero-stat-grid">
+                <div class="hero-stat">
+                    <span>Active users</span>
+                    <strong>12K+</strong>
+                </div>
+                <div class="hero-stat">
+                    <span>Fast onboarding</span>
+                    <strong>98%</strong>
+                </div>
+                <div class="hero-stat">
+                    <span>Support</span>
+                    <strong>24/7</strong>
+                </div>
+            </div>
         </div>
     </div>
     <div class="auth-side auth-side-right">
