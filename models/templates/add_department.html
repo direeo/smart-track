@@ -13,7 +13,7 @@
     {% endif %}
     
     {% if not success %}
-    <form method="post">
+    <form method="post" action="/admin/add-department">
         <div class="form-group">
             <label for="name">Department Name:</label>
             <input type="text" id="name" name="name" placeholder="e.g., Engineering, Sales, HR" required>

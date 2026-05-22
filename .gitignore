@@ -7,5 +7,7 @@ venv/
 models/__pycache__/
 
 models/smarttrack.db-journal
+smarttrack.db
+models/smarttrack.db
 
 *.log

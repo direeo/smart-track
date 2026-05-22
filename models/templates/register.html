@@ -1,44 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}Register - SmartTrack{% endblock %}
+{% block title %}Create Company - SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 500px; margin: 30px auto;">
-    <h2>Create Company Account</h2>
-    {% if error %}
-    <div class="error">{{ error }}</div>
-    {% endif %}
-    {% if success %}
-    <div class="success">
-        <strong>Account created successfully!</strong><br>
-        Company Code: <strong>{{ success }}</strong><br>
-        Share this code with your team members to join. <a href="/login">Go to login</a>
+<div class="auth-panel">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="brand-tag">Create Company</span>
+            <h2>Launch your organisation</h2>
+            <p class="auth-copy">Create your company account, add core departments, and start tracking KPIs instantly.</p>
+        </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+        <div class="success">
+            <strong>Company created successfully! 🎉</strong>
+            <div class="success-panel" style="margin-top: 18px; padding: 20px; border-radius: 16px; background: var(--light-bg); border: 1px solid var(--border);">
+                <p class="small" style="margin:0 0 8px;">Your Company Code:</p>
+                <div style="font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: 1px;">{{ success }}</div>
+            </div>
+            <p style="margin-top: 18px;">Share this code with your team so they can join your organisation.</p>
+            <div class="auth-actions" style="margin-top: 24px;">
+                <a href="/login" class="btn btn-secondary">Continue to Login</a>
+                <a href="/signup" class="btn btn-outline">Join existing company</a>
+            </div>
+        </div>
+        {% else %}
+        <form method="post" action="/register">
+            <div class="form-group">
+                <label for="company_name">Company Name</label>
+                <input type="text" id="company_name" name="company_name" placeholder="e.g., Acme Corporation" required>
+            </div>
+            <div class="form-group">
+                <label for="full_name">Your Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group password-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                <button type="button" class="pass-toggle" onclick="togglePassword('password','password-toggle')"><span id="password-toggle">Show</span></button>
+            </div>
+            <div class="form-group">
+                <label for="department_names">Departments</label>
+                <textarea id="department_names" name="department_names" rows="3" placeholder="One per line (e.g., Sales, Engineering, HR)">Sales
+Engineering
+Human Resources
+Operations</textarea>
+                <small>Enter each department on a new line</small>
+            </div>
+            <div class="form-actions">
+                <input type="submit" value="Create Company" style="width: 100%;">
+            </div>
+        </form>
+        <div class="auth-actions" style="margin-top: 24px;">
+            <a href="/login" class="btn btn-secondary">Sign in</a>
+            <a href="/signup" class="btn btn-outline">Join company</a>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <form method="post">
-        <div class="form-group">
-            <label for="company_name">Company Name:</label>
-            <input type="text" id="company_name" name="company_name" required>
-        </div>
-        <div class="form-group">
-            <label for="full_name">Full Name:</label>
-            <input type="text" id="full_name" name="full_name" required>
-        </div>
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="department_names">Departments (comma-separated):</label>
-            <textarea id="department_names" name="department_names" rows="3">Sales, Engineering, HR, Operations</textarea>
-        </div>
-        <input type="submit" value="Create Account">
-    </form>
-    {% endif %}
-    <p>Already have an account? <a href="/login">Login here</a></p>
 </div>
 {% endblock %}

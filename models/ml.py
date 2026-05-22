@@ -27,85 +27,115 @@ except ImportError as e:
     sys.exit(1)
 
 
-def predict_kpi(kpi_data: pd.DataFrame, forecast_steps: int = 30) -> dict:
+def predict_kpi(update_list: list, target_value: float, deadline: str, unit: str) -> dict:
     """
     Forecast KPI values using ARIMA model.
     
     Args:
-        kpi_data: DataFrame with KPI time series (must have 'value' column with timestamps)
-        forecast_steps: Number of periods to forecast ahead (default: 30)
+        update_list: List of {"date": "YYYY-MM-DD", "value": float} historical updates
+        target_value: Target KPI value
+        deadline: Deadline date (YYYY-MM-DD format)
+        unit: Unit of measurement (e.g., "$", "%", "units")
     
     Returns:
-        dict with 'forecast', 'confidence_interval', 'rmse', 'status'
+        dict with 'forecast', 'trend', 'status', 'recommendation'
     """
     try:
-        print(f"[*] Predicting KPI for {len(kpi_data)} data points", flush=True)
+        print(f"[*] Predicting KPI with {len(update_list)} historical updates, target={target_value}", flush=True)
         
-        if kpi_data is None or len(kpi_data) < 3:
-            print(f"[WARN] Insufficient data for ARIMA ({len(kpi_data) if kpi_data is not None else 0} points), using fallback", flush=True)
+        if not update_list or len(update_list) < 2:
+            print(f"[WARN] Insufficient historical data ({len(update_list)} points), using simple estimate", flush=True)
             return {
-                'forecast': [100.0] * forecast_steps,
-                'confidence_interval': {'lower': [90.0] * forecast_steps, 'upper': [110.0] * forecast_steps},
-                'rmse': 0.0,
+                'current': 0,
+                'target': target_value,
+                'forecast': target_value,
+                'trend': 'neutral',
+                'confidence': 0.3,
+                'recommendation': 'More data needed for accurate forecast',
                 'status': 'insufficient_data'
             }
         
-        # Ensure we have numeric values
-        values = pd.to_numeric(kpi_data, errors='coerce').dropna()
+        # Extract values
+        values = np.array([float(u['value']) for u in update_list])
         
         if len(values) < 3:
-            print(f"[WARN] Not enough valid numeric values for ARIMA, using fallback", flush=True)
+            # Simple linear trend
+            current = float(values[-1])
+            first = float(values[0])
+            trend_val = (current - first) / len(values)
+            
             return {
-                'forecast': [float(values.mean()) if len(values) > 0 else 100.0] * forecast_steps,
-                'confidence_interval': {'lower': [90.0] * forecast_steps, 'upper': [110.0] * forecast_steps},
-                'rmse': 0.0,
-                'status': 'invalid_data'
+                'current': current,
+                'target': target_value,
+                'forecast': current + (trend_val * 5),  # 5-day projection
+                'trend': 'up' if trend_val > 0 else 'down' if trend_val < 0 else 'neutral',
+                'confidence': 0.5,
+                'recommendation': f'Trend is {"improving" if trend_val > 0 else "declining"}, monitor closely',
+                'status': 'simple_trend'
             }
         
-        # Fit ARIMA model (p=1, d=1, q=1 as default simple params)
+        # Fit ARIMA model
         try:
             model = ARIMA(values, order=(1, 1, 1))
             results = model.fit()
             
-            # Get forecast
-            forecast = results.get_forecast(steps=forecast_steps)
-            forecast_values = forecast.predicted_mean.tolist()
+            # Get forecast for 10 periods
+            forecast = results.get_forecast(steps=10)
+            forecast_values = forecast.predicted_mean
             
-            # Get confidence intervals
-            conf_int = forecast.conf_int(alpha=0.05)
-            conf_int_lower = conf_int.iloc[:, 0].tolist()
-            conf_int_upper = conf_int.iloc[:, 1].tolist()
+            # Calculate metrics
+            current = float(values[-1])
+            predicted_next = float(forecast_values.iloc[0])
+            avg_forecast = float(forecast_values.mean())
             
-            # Calculate RMSE on training data (simple check)
+            # Determine trend
+            if predicted_next > current * 1.02:
+                trend = 'up'
+            elif predicted_next < current * 0.98:
+                trend = 'down'
+            else:
+                trend = 'neutral'
+            
+            # Calculate confidence based on residuals
             residuals = results.resid
             rmse = float(np.sqrt(np.mean(residuals ** 2)))
+            confidence = max(0.3, min(1.0, 1.0 - (rmse / current) if current != 0 else 0.6))
             
-            print(f"[OK] ARIMA prediction successful: forecast mean={np.mean(forecast_values):.2f}, RMSE={rmse:.2f}", flush=True)
+            # Generate recommendation
+            pct_of_target = (current / target_value * 100) if target_value != 0 else 0
+            if pct_of_target >= 100:
+                recommendation = f"✓ Target achieved at {pct_of_target:.0f}%"
+            elif pct_of_target >= 80:
+                recommendation = f"On track: {pct_of_target:.0f}% of target"
+            elif trend == 'up':
+                recommendation = f"Improving: {pct_of_target:.0f}% of target, maintain momentum"
+            else:
+                recommendation = f"Below target at {pct_of_target:.0f}%, acceleration needed"
+            
+            print(f"[OK] ARIMA prediction: current={current:.2f}, forecast={avg_forecast:.2f}, trend={trend}", flush=True)
             
             return {
-                'forecast': forecast_values,
-                'confidence_interval': {
-                    'lower': conf_int_lower,
-                    'upper': conf_int_upper
-                },
-                'rmse': rmse,
+                'current': current,
+                'target': target_value,
+                'forecast': avg_forecast,
+                'trend': trend,
+                'confidence': confidence,
+                'recommendation': recommendation,
                 'status': 'success'
             }
         except Exception as arima_err:
-            print(f"[WARN] ARIMA fitting failed ({arima_err}), using exponential smoothing fallback", flush=True)
-            # Fallback: simple exponential smoothing style forecast
-            last_val = float(values.iloc[-1])
-            trend = float((values.iloc[-1] - values.iloc[0]) / len(values)) if len(values) > 1 else 0
-            forecast_values = [last_val + trend * (i + 1) for i in range(forecast_steps)]
+            print(f"[WARN] ARIMA fitting failed ({arima_err}), using simple trend", flush=True)
+            current = float(values[-1])
+            trend_val = float(values[-1] - values[0]) / len(values)
             
             return {
-                'forecast': forecast_values,
-                'confidence_interval': {
-                    'lower': [v * 0.9 for v in forecast_values],
-                    'upper': [v * 1.1 for v in forecast_values]
-                },
-                'rmse': 0.0,
-                'status': 'exponential_smoothing_fallback'
+                'current': current,
+                'target': target_value,
+                'forecast': current + (trend_val * 5),
+                'trend': 'up' if trend_val > 0 else 'down' if trend_val < 0 else 'neutral',
+                'confidence': 0.5,
+                'recommendation': f'Simple trend: {"improving" if trend_val > 0 else "declining"}',
+                'status': 'simple_trend_fallback'
             }
             
     except Exception as e:
@@ -113,75 +143,109 @@ def predict_kpi(kpi_data: pd.DataFrame, forecast_steps: int = 30) -> dict:
         import traceback
         traceback.print_exc(file=sys.stderr)
         
-        # Return safe fallback
         return {
-            'forecast': [100.0] * forecast_steps,
-            'confidence_interval': {'lower': [90.0] * forecast_steps, 'upper': [110.0] * forecast_steps},
-            'rmse': 0.0,
+            'current': 0,
+            'target': target_value,
+            'forecast': target_value,
+            'trend': 'neutral',
+            'confidence': 0.0,
+            'recommendation': 'Unable to generate prediction',
             'status': 'error'
         }
 
 
-def predict_behaviour(employee_data: dict) -> dict:
+def predict_behaviour(update_list: list, target_value: float, deadline: str) -> dict:
     """
-    Predict employee behavior/performance using Random Forest model.
+    Predict KPI achievement behavior/performance based on historical updates.
     
     Args:
-        employee_data: Dictionary with employee metrics (kpis_completed, kpis_missed, avg_performance, etc.)
+        update_list: List of {"date": "YYYY-MM-DD", "value": float} historical updates
+        target_value: Target KPI value
+        deadline: Deadline date (YYYY-MM-DD format)
     
     Returns:
-        dict with 'risk_score', 'prediction', 'confidence', 'recommendation'
+        dict with 'risk_level', 'achievement_probability', 'days_remaining', 'recommendation'
     """
     try:
-        print(f"[*] Predicting employee behavior", flush=True)
+        print(f"[*] Predicting behavior for {len(update_list)} updates, target={target_value}, deadline={deadline}", flush=True)
         
-        # Extract features from employee data
-        features = {}
-        features['kpis_completed'] = float(employee_data.get('kpis_completed', 0))
-        features['kpis_missed'] = float(employee_data.get('kpis_missed', 0))
-        features['avg_performance'] = float(employee_data.get('avg_performance', 50))
-        features['projects_count'] = float(employee_data.get('projects_count', 0))
-        features['days_since_update'] = float(employee_data.get('days_since_update', 0))
+        if not update_list or len(update_list) == 0:
+            print(f"[WARN] No historical data for behavior prediction", flush=True)
+            return {
+                'risk_level': 'high',
+                'achievement_probability': 0.0,
+                'days_remaining': 0,
+                'recommendation': 'No progress recorded yet. Start updating KPI values.',
+                'status': 'no_data'
+            }
         
-        # Simple risk scoring based on rules
-        risk_score = 0.0
+        # Parse dates and calculate days remaining
+        from datetime import datetime
+        try:
+            deadline_dt = datetime.strptime(deadline, '%Y-%m-%d')
+            today = datetime.now()
+            days_remaining = (deadline_dt - today).days
+        except:
+            days_remaining = 30  # Default estimate
         
-        if features['kpis_missed'] > features['kpis_completed']:
-            risk_score += 30
+        # Extract values
+        values = np.array([float(u['value']) for u in update_list])
+        current_value = float(values[-1])
         
-        if features['avg_performance'] < 50:
-            risk_score += 40
-        
-        if features['days_since_update'] > 30:
-            risk_score += 20
-        
-        if features['projects_count'] == 0:
-            risk_score += 15
-        
-        # Cap at 100
-        risk_score = min(100.0, max(0.0, risk_score))
-        
-        # Determine prediction
-        if risk_score > 70:
-            prediction = "high_risk"
-            recommendation = "Immediate intervention needed: Check in with employee, review workload, provide support"
-        elif risk_score > 40:
-            prediction = "medium_risk"
-            recommendation = "Monitor closely: Schedule check-in, review KPIs, discuss challenges"
+        # Calculate progress rate
+        if len(values) > 1:
+            progress = current_value - float(values[0])
+            days_elapsed = len(update_list)  # Rough estimate
+            daily_rate = progress / max(days_elapsed, 1)
         else:
-            prediction = "low_risk"
-            recommendation = "On track: Continue regular monitoring, provide recognition"
+            daily_rate = 0
+            progress = 0
         
-        confidence = 0.75 + (0.25 * (features['avg_performance'] / 100))  # Confidence based on performance clarity
-        confidence = min(1.0, max(0.5, confidence))
+        # Calculate achievement probability
+        remaining_gap = target_value - current_value
         
-        print(f"[OK] Behavior prediction: risk={risk_score:.1f}, prediction={prediction}, confidence={confidence:.2f}", flush=True)
+        if remaining_gap <= 0:
+            # Already achieved
+            achievement_prob = 100.0
+            risk = 'low'
+            rec = f"✓ Target achieved! Current: {current_value}, Target: {target_value}"
+        elif days_remaining <= 0:
+            # Deadline passed
+            achievement_prob = 0.0
+            risk = 'critical'
+            rec = f"✗ Deadline passed. Final value: {current_value} / {target_value}"
+        elif daily_rate > 0:
+            # Calculate if we can reach target
+            projected_final = current_value + (daily_rate * days_remaining)
+            achievement_prob = min(100.0, max(0.0, (projected_final / target_value) * 100))
+            
+            if achievement_prob >= 100:
+                risk = 'low'
+                rec = f"On pace to exceed target. Projected: {projected_final:.0f} / {target_value}"
+            elif achievement_prob >= 80:
+                risk = 'medium'
+                rec = f"Good pace. {achievement_prob:.0f}% likely to achieve. Keep up momentum."
+            elif achievement_prob >= 50:
+                risk = 'medium_high'
+                rec = f"Moderate risk at {achievement_prob:.0f}% likelihood. Acceleration recommended."
+            else:
+                risk = 'high'
+                rec = f"High risk. Only {achievement_prob:.0f}% likely at current pace. Urgent action needed."
+        else:
+            # Not progressing
+            achievement_prob = 0.0
+            risk = 'critical'
+            rec = f"No progress. Current: {current_value} / {target_value}. Action required immediately."
+        
+        print(f"[OK] Behavior prediction: risk={risk}, prob={achievement_prob:.0f}%", flush=True)
         
         return {
-            'risk_score': float(risk_score),
-            'prediction': prediction,
-            'confidence': float(confidence),
-            'recommendation': recommendation,
+            'risk_level': risk,
+            'achievement_probability': achievement_prob,
+            'days_remaining': days_remaining,
+            'current_value': current_value,
+            'target_value': target_value,
+            'recommendation': rec,
             'status': 'success'
         }
         
@@ -191,10 +255,10 @@ def predict_behaviour(employee_data: dict) -> dict:
         traceback.print_exc(file=sys.stderr)
         
         return {
-            'risk_score': 50.0,
-            'prediction': 'unknown',
-            'confidence': 0.0,
-            'recommendation': 'Unable to generate prediction',
+            'risk_level': 'unknown',
+            'achievement_probability': 50.0,
+            'days_remaining': 0,
+            'recommendation': 'Unable to generate behavior prediction',
             'status': 'error'
         }
 
@@ -204,13 +268,17 @@ try:
     print("[*] Testing ML module functions...", flush=True)
     
     # Test predict_kpi with dummy data
-    test_data = pd.Series([100, 102, 101, 103, 105, 104, 106, 108, 107, 109])
-    result = predict_kpi(test_data, forecast_steps=5)
+    test_updates = [
+        {"date": "2026-01-01", "value": 50},
+        {"date": "2026-01-15", "value": 65},
+        {"date": "2026-02-01", "value": 75},
+        {"date": "2026-02-15", "value": 85},
+    ]
+    result = predict_kpi(test_updates, target_value=100, deadline="2026-03-01", unit="units")
     print(f"[TEST] predict_kpi: {result['status']}", flush=True)
     
     # Test predict_behaviour with dummy data
-    emp_data = {'kpis_completed': 5, 'kpis_missed': 1, 'avg_performance': 85, 'projects_count': 3, 'days_since_update': 5}
-    result = predict_behaviour(emp_data)
+    result = predict_behaviour(test_updates, target_value=100, deadline="2026-03-15")
     print(f"[TEST] predict_behaviour: {result['status']}", flush=True)
     
     print("[OK] ML module fully loaded and tested", flush=True)

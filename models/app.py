@@ -116,6 +116,12 @@ def root(request: Request):
                                       {"request": request, "error": None, "success": None})
 
 
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html",
+                                      {"request": request, "error": None, "success": None})
+
+
 @app.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     conn = get_conn()
