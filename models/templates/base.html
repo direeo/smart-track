@@ -9,6 +9,8 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+    {% set auth_paths = ['/', '/login', '/register', '/signup'] %}
+    {% if request.url.path not in auth_paths %}
     <header class="app-header">
         <div class="header-inner">
             <div>
@@ -27,6 +29,7 @@
         <a href="/logout" style="float: right;">Logout</a>
     </nav>
     {% endif %}
+    {% endif %}
     <main>
         {% block content %}{% endblock %}
     </main>
@@ -40,7 +43,7 @@
             if (!field) return;
             field.type = field.type === 'password' ? 'text' : 'password';
             if (label) {
-                label.textContent = field.type === 'password' ? 'Show' : 'Hide';
+                label.textContent = field.type === 'password' ? '👁' : '🙈';
             }
         }
 
