@@ -4,7 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SmartTrack KPI System{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=7">
+    <style>
+        .pass-toggle,
+        button.pass-toggle,
+        #password-toggle {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    </style>
     <meta name="description" content="SmartTrack KPI Management System — modern KPI tracking for teams and managers.">
     {% block extra_css %}{% endblock %}
 </head>
@@ -37,16 +50,6 @@
         <p>&copy; 2024 SmartTrack KPI System. All rights reserved.</p>
     </footer>
     <script>
-        function togglePassword(fieldId, toggleId) {
-            const field = document.getElementById(fieldId);
-            const label = document.getElementById(toggleId);
-            if (!field) return;
-            field.type = field.type === 'password' ? 'text' : 'password';
-            if (label) {
-                label.textContent = field.type === 'password' ? '👁' : '🙈';
-            }
-        }
-
         function toggleSampleLogins() {
             const panel = document.getElementById('sample-logins');
             const button = document.getElementById('show-sample-btn');

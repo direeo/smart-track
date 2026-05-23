@@ -480,32 +480,28 @@ body.auth-page main {
     color: white;
 }
 
-.auth-side-left::before {
-    content: '';
-    position: absolute;
-    width: 360px;
-    height: 360px;
-    top: -90px;
-    right: -90px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    filter: blur(40px);
-}
-
-.auth-side-left::after {
-    content: '';
-    position: absolute;
-    width: 180px;
-    height: 180px;
-    left: 18px;
-    bottom: -40px;
-    border-radius: 48px;
-    background: rgba(59, 130, 246, 0.16);
-    filter: blur(20px);
-}
-
 .auth-side-right {
     background: #f8fafc;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 16px;
+}
+
+.pass-toggle,
+button.pass-toggle,
+#password-toggle {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .auth-side-content {
@@ -551,11 +547,10 @@ body.auth-page main {
     max-width: 520px;
     background: white;
     border-radius: 28px;
-    padding: 38px 34px;
+    padding: 32px 30px;
     border: 1px solid rgba(15, 23, 42, 0.08);
     box-shadow: 0 36px 82px rgba(15, 23, 42, 0.09);
-    max-height: calc(100vh - 80px);
-    overflow-y: auto;
+    overflow: visible;
 }
 
 .auth-header {
@@ -794,34 +789,6 @@ body.auth-page main {
     letter-spacing: 1px;
 }
 
-..password-field {
-    position: relative;
-}
-
-.password-field input {
-    padding-right: 44px;
-}
-
-.pass-toggle {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 4px;
-}
-
-.pass-toggle:hover {
-    color: #1d4ed8;
-}
-
-.pass-toggle span {
-    display: inline-block;
-}
 
 .btn-secondary {
     background: #f8fafc;
