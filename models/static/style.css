@@ -446,20 +446,21 @@ body.auth-page footer {
 body.auth-page {
     min-height: 100vh;
     background: linear-gradient(180deg, #0b274e 0%, #1d4ed8 45%, #eff6ff 100%);
-    overflow: hidden;
+    overflow: auto;
 }
 
 body.auth-page main {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
+    min-height: auto;
 }
 
 .auth-frame {
     display: grid;
     grid-template-columns: 46% 54%;
     min-height: 100vh;
-    margin: 0 auto;
+    width: min(100%, 1180px);
+    margin: 24px auto 32px;
     border-radius: 0;
     overflow: hidden;
     box-shadow: none;
@@ -470,7 +471,7 @@ body.auth-page main {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 52px 42px;
+    padding: 40px 32px;
     position: relative;
     min-height: 100vh;
 }
@@ -510,6 +511,25 @@ button.pass-toggle,
     z-index: 1;
 }
 
+.show-password {
+    margin-top: 10px;
+}
+
+.show-password label {
+    font-size: 14px;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.show-password input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+}
+
 .brand-block {
     display: flex;
     align-items: center;
@@ -527,7 +547,7 @@ button.pass-toggle,
 }
 
 .hero-title {
-    font-size: 42px;
+    font-size: 38px;
     line-height: 1.05;
     letter-spacing: -0.03em;
     margin-bottom: 14px;
@@ -547,7 +567,7 @@ button.pass-toggle,
     max-width: 520px;
     background: white;
     border-radius: 28px;
-    padding: 32px 30px;
+    padding: 30px 28px;
     border: 1px solid rgba(15, 23, 42, 0.08);
     box-shadow: 0 36px 82px rgba(15, 23, 42, 0.09);
     overflow: visible;
@@ -675,17 +695,6 @@ button.pass-toggle,
     line-height: 1.1;
     color: white;
 }
-
-.auth-card.compact-card {
-    width: 100%;
-    max-width: 520px;
-    background: white;
-    border-radius: 32px;
-    padding: 52px 46px;
-    border: 1px solid rgba(15, 23, 42, 0.07);
-    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.08);
-}
-
 .auth-header span.brand-tag {
     display: inline-flex;
     align-items: center;

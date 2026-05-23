@@ -57,6 +57,11 @@
             panel.classList.toggle('hidden');
             button.textContent = panel.classList.contains('hidden') ? 'View sample logins' : 'Hide sample logins';
         }
+        function togglePasswordVisibility(fieldId, checkbox) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.type = checkbox.checked ? 'text' : 'password';
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>
