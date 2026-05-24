@@ -30,7 +30,7 @@ except Exception as e:
 
 print("[*] Importing database and ML modules...", flush=True)
 try:
-    from database import init_db, get_conn, hash_pw, generate_code
+    from database import DB_PATH, init_db, get_conn, hash_pw, generate_code
     from ml import predict_kpi, predict_behaviour
     print("[OK] Database and ML imports successful", flush=True)
 except Exception as e:
@@ -67,6 +67,16 @@ except Exception as e:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/debug-db")
+def debug_db(request: Request):
+    conn = get_conn()
+    users_count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    comps_count = conn.execute("SELECT COUNT(*) FROM companies").fetchone()[0]
+    dept_count = conn.execute("SELECT COUNT(*) FROM departments").fetchone()[0]
+    user_names = [row[0] for row in conn.execute("SELECT username FROM users ORDER BY username LIMIT 20").fetchall()]
+    conn.close()
+    return {"db_path": str(DB_PATH), "users": users_count, "companies": comps_count, "departments": dept_count, "sample_usernames": user_names}
 
 
 # Initialize database on startup
