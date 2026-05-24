@@ -32,7 +32,7 @@ print("[*] Importing database and ML modules...", flush=True)
 try:
     from database import DB_PATH, init_db, get_conn, hash_pw, generate_code
     from ml import predict_kpi, predict_behaviour
-    from seed_full import ensure_full_seed
+    from seed_full import ensure_full_seed, ensure_test_accounts
     print("[OK] Database and ML imports successful", flush=True)
 except Exception as e:
     print(f"[CRITICAL] Failed to import database/ml: {e}", file=sys.stderr, flush=True)
@@ -96,6 +96,14 @@ try:
     ensure_full_seed()
 except Exception as e:
     print(f"[WARNING] Seed failed (non-fatal): {e}", file=sys.stderr, flush=True)
+    import traceback
+    traceback.print_exc()
+
+print("[*] Ensuring 20 isolated tester accounts...", flush=True)
+try:
+    ensure_test_accounts()
+except Exception as e:
+    print(f"[WARNING] Test account seed failed (non-fatal): {e}", file=sys.stderr, flush=True)
     import traceback
     traceback.print_exc()
 print("[OK] Seed complete", flush=True)

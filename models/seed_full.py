@@ -331,3 +331,316 @@ def ensure_full_seed():
     conn.commit()
     conn.close()
     print("[OK] Full seed data ensured (Nexus + Pinnacle)", flush=True)
+
+
+def ensure_test_accounts():
+    """
+    Create 20 isolated tester accounts (4 per scenario A–E) so each person
+    works with their own clean data and cannot affect other testers.
+
+    Scenario A (nex_star_a/b/c/d)  — Employee on track
+    Scenario B (nex_risk_a/b/c/d)  — Employee at risk
+    Scenario C (nex_done_a/b/c/d)  — Employee, deadline passed
+    Scenario D (nex_mgr_a/b/c/d)   — Manager (each gets own mini-company)
+    Scenario E (admin_alpha/beta/gamma/delta) — Admin (each gets own mini-company)
+    """
+    conn = get_conn()
+    today = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+
+    # ── helpers ──────────────────────────────────────────────────────────────
+
+    def _company(name, code):
+        row = conn.execute("SELECT id FROM companies WHERE code=?", (code,)).fetchone()
+        if row:
+            return row[0]
+        conn.execute("INSERT INTO companies (name, code) VALUES (?,?)", (name, code))
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _dept(name, cid):
+        row = conn.execute(
+            "SELECT id FROM departments WHERE name=? AND company_id=?", (name, cid)
+        ).fetchone()
+        if row:
+            return row[0]
+        conn.execute("INSERT INTO departments (name, company_id) VALUES (?,?)", (name, cid))
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _user(uname, pw, full, role, did, cid):
+        row = conn.execute("SELECT id FROM users WHERE username=?", (uname,)).fetchone()
+        if row:
+            conn.execute(
+                "UPDATE users SET password=?,full_name=?,role=?,department_id=?,company_id=?"
+                " WHERE username=?",
+                (hash_pw(pw), full, role, did, cid, uname)
+            )
+            return row[0]
+        conn.execute(
+            "INSERT INTO users (username,password,full_name,role,department_id,company_id)"
+            " VALUES (?,?,?,?,?,?)",
+            (uname, hash_pw(pw), full, role, did, cid)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _project(name, desc, start, end, status, by, did, cid):
+        row = conn.execute(
+            "SELECT id FROM projects WHERE name=? AND company_id=? AND created_by=?",
+            (name, cid, by)
+        ).fetchone()
+        if row:
+            return row[0], False
+        conn.execute(
+            "INSERT INTO projects (name,description,start_date,end_date,status,"
+            "created_by,department_id,company_id) VALUES (?,?,?,?,?,?,?,?)",
+            (name, desc, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"),
+             status, by, did, cid)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0], True
+
+    def _member(pid, uid):
+        conn.execute(
+            "INSERT OR IGNORE INTO project_members (project_id, user_id) VALUES (?,?)",
+            (pid, uid)
+        )
+
+    def _kpi(title, desc, target, unit, deadline, by, assigned, pid, did):
+        row = conn.execute(
+            "SELECT id FROM kpis WHERE title=? AND project_id=? AND assigned_to=?",
+            (title, pid, assigned)
+        ).fetchone()
+        if row:
+            return row[0], False
+        conn.execute(
+            "INSERT INTO kpis (title,description,target_value,unit,deadline,"
+            "created_by,assigned_to,project_id,department_id) VALUES (?,?,?,?,?,?,?,?,?)",
+            (title, desc, target, unit, deadline.strftime("%Y-%m-%d"),
+             by, assigned, pid, did)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0], True
+
+    def _updates(kid, entries):
+        if conn.execute(
+            "SELECT COUNT(*) FROM kpi_updates WHERE kpi_id=?", (kid,)
+        ).fetchone()[0]:
+            return
+        for val, dt, note in entries:
+            conn.execute(
+                "INSERT INTO kpi_updates (kpi_id,value,note,updated_at) VALUES (?,?,?,?)",
+                (kid, val, note, dt.strftime("%Y-%m-%d %H:%M:%S"))
+            )
+
+    # ── Look up existing Nexus IDs ────────────────────────────────────────────
+    nex_row = conn.execute("SELECT id FROM companies WHERE code='NEXUS1'").fetchone()
+    if not nex_row:
+        conn.close()
+        print("[WARNING] Nexus not seeded yet — skipping test accounts", flush=True)
+        return
+    nex = nex_row[0]
+    eng = conn.execute(
+        "SELECT id FROM departments WHERE name='Engineering' AND company_id=?", (nex,)
+    ).fetchone()[0]
+    prd = conn.execute(
+        "SELECT id FROM departments WHERE name='Product' AND company_id=?", (nex,)
+    ).fetchone()[0]
+    n_mgr_e = conn.execute("SELECT id FROM users WHERE username='nex_mgr_e'").fetchone()[0]
+    n_mgr_p = conn.execute("SELECT id FROM users WHERE username='nex_mgr_p'").fetchone()[0]
+
+    p1_row = conn.execute(
+        "SELECT id FROM projects WHERE name='Q2 Platform Sprint' AND company_id=?", (nex,)
+    ).fetchone()
+    p3_row = conn.execute(
+        "SELECT id FROM projects WHERE name='Q1 Documentation Sprint' AND company_id=?", (nex,)
+    ).fetchone()
+    if not p1_row or not p3_row:
+        conn.close()
+        print("[WARNING] Nexus projects not found — skipping test accounts", flush=True)
+        return
+    p1_id = p1_row[0]
+    p3_id = p3_row[0]
+
+    # ── Reference dates ───────────────────────────────────────────────────────
+    p1s = today - timedelta(days=45)
+    p1e = today + timedelta(days=30)
+    p3s = today - timedelta(days=50)
+    p3e = today - timedelta(days=6)
+
+    # ── Shared update sequences ───────────────────────────────────────────────
+    STAR_UPDATES = [
+        (6,  p1s+timedelta(days=4),  "Cleared first batch - strong start"),
+        (14, p1s+timedelta(days=10), "Kept the pace up, reviewed design PRs"),
+        (23, p1s+timedelta(days=16), "Strong week - big backend batch done"),
+        (33, p1s+timedelta(days=22), "Ahead of schedule, helping others"),
+        (42, p1s+timedelta(days=29), "Over 70% done, very comfortable"),
+        (50, p1s+timedelta(days=36), "Almost there"),
+        (55, p1s+timedelta(days=42), "5 left with a month to spare"),
+    ]
+    RISK_UPDATES = [
+        (2,  p1s+timedelta(days=7),  "Still ramping up on the codebase"),
+        (5,  p1s+timedelta(days=14), "Slow progress - some blockers"),
+        (9,  p1s+timedelta(days=21), "Cleared some easy ones"),
+        (13, p1s+timedelta(days=28), "Blocked awaiting third party"),
+        (17, p1s+timedelta(days=35), "Unblocked but still far behind"),
+        (21, p1s+timedelta(days=41), "Pace not improving enough"),
+        (25, p1s+timedelta(days=44), "Need 55 more in 30 days - very unlikely"),
+    ]
+    DONE_UPDATES = [
+        (3,  p3s+timedelta(days=6),  "Started with API docs"),
+        (7,  p3s+timedelta(days=13), "Slow going - complex endpoints"),
+        (11, p3s+timedelta(days=20), "Behind pace"),
+        (16, p3s+timedelta(days=28), "Tried to catch up"),
+        (20, p3s+timedelta(days=36), "Still significantly behind"),
+        (24, p3s+timedelta(days=43), "Deadline approaching fast"),
+        (28, p3s+timedelta(days=49), "Deadline passed - only 28 of 40 pages done"),
+    ]
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # SCENARIOS A / B / C  — employee accounts in existing Nexus projects
+    # ═════════════════════════════════════════════════════════════════════════
+
+    for s in ['a', 'b', 'c', 'd']:
+        # Scenario A — Esther (on track)
+        uid = _user(f"nex_star_{s}", "emp123", "Esther Ojo", "employee", eng, nex)
+        _member(p1_id, uid)
+        k, new = _kpi("Complete code reviews",
+                      "Review all pull requests assigned during the sprint.",
+                      60, "reviews", p1e, n_mgr_e, uid, p1_id, eng)
+        if new:
+            _updates(k, STAR_UPDATES)
+
+        # Scenario B — Ngozi (at risk)
+        uid = _user(f"nex_risk_{s}", "emp123", "Ngozi Ihejirika", "employee", eng, nex)
+        _member(p1_id, uid)
+        k, new = _kpi("Resolve bug tickets",
+                      "Clear all assigned critical and high-priority bugs from the backlog.",
+                      80, "bugs", p1e, n_mgr_e, uid, p1_id, eng)
+        if new:
+            _updates(k, RISK_UPDATES)
+
+        # Scenario C — Bola (deadline passed)
+        uid = _user(f"nex_done_{s}", "emp123", "Bola Adeleke", "employee", prd, nex)
+        _member(p3_id, uid)
+        k, new = _kpi("Write technical documentation",
+                      "Complete all developer docs, API guides, and release notes.",
+                      40, "pages", p3e, n_mgr_p, uid, p3_id, prd)
+        if new:
+            _updates(k, DONE_UPDATES)
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # SCENARIO D — 4 manager mini-companies (each tester owns their own sprint)
+    # ═════════════════════════════════════════════════════════════════════════
+
+    MGR_COS = [
+        ("Nexus Engineering A", "MGRA01", "nex_mgr_a"),
+        ("Nexus Engineering B", "MGRB02", "nex_mgr_b"),
+        ("Nexus Engineering C", "MGRC03", "nex_mgr_c"),
+        ("Nexus Engineering D", "MGRD04", "nex_mgr_d"),
+    ]
+    for cname, ccode, mgr_uname in MGR_COS:
+        cid  = _company(cname, ccode)
+        dept = _dept("Engineering", cid)
+
+        mgr   = _user(mgr_uname,           "mgr123", "Tunde Bakare",    "manager",  dept, cid)
+        star  = _user(f"star_{ccode.lower()}", "emp123", "Esther Ojo",   "employee", dept, cid)
+        risk  = _user(f"risk_{ccode.lower()}", "emp123", "Ngozi Ihejirika", "employee", dept, cid)
+        femi  = _user(f"femi_{ccode.lower()}", "emp123", "Femi Lawal",   "employee", dept, cid)
+
+        ps = today - timedelta(days=45)
+        pe = today + timedelta(days=30)
+
+        proj_id, _ = _project(
+            "Q2 Platform Sprint",
+            "Deliver core platform features and resolve the critical backlog for Q2 release.",
+            ps, pe, "active", mgr, dept, cid
+        )
+        for uid in [mgr, star, risk, femi]:
+            _member(proj_id, uid)
+
+        k1, n1 = _kpi("Complete code reviews",
+                      "Review all pull requests assigned during the sprint.",
+                      60, "reviews", pe, mgr, star, proj_id, dept)
+        if n1:
+            _updates(k1, [
+                (6,  ps+timedelta(days=4),  "Cleared first batch - strong start"),
+                (14, ps+timedelta(days=10), "Kept the pace up, reviewed design PRs"),
+                (23, ps+timedelta(days=16), "Strong week - big backend batch done"),
+                (33, ps+timedelta(days=22), "Ahead of schedule, helping others"),
+                (42, ps+timedelta(days=29), "Over 70% done, very comfortable"),
+                (50, ps+timedelta(days=36), "Almost there"),
+                (55, ps+timedelta(days=42), "5 left with a month to spare"),
+            ])
+
+        k2, n2 = _kpi("Resolve bug tickets",
+                      "Clear all assigned critical and high-priority bugs from the backlog.",
+                      80, "bugs", pe, mgr, risk, proj_id, dept)
+        if n2:
+            _updates(k2, [
+                (2,  ps+timedelta(days=7),  "Still ramping up on the codebase"),
+                (5,  ps+timedelta(days=14), "Slow progress - some blockers"),
+                (9,  ps+timedelta(days=21), "Cleared some easy ones"),
+                (13, ps+timedelta(days=28), "Blocked awaiting third party"),
+                (17, ps+timedelta(days=35), "Unblocked but still far behind"),
+                (21, ps+timedelta(days=41), "Pace not improving enough"),
+                (25, ps+timedelta(days=44), "Need 55 more in 30 days - very unlikely"),
+            ])
+        # femi has NO KPI — manager creates "Complete security review" during the test
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # SCENARIO E — 4 admin mini-companies (each tester is admin of their own org)
+    # ═════════════════════════════════════════════════════════════════════════
+
+    ADM_COS = [
+        ("Alpha Solutions Ltd",  "ADMA01", "admin_alpha"),
+        ("Beta Solutions Ltd",   "ADMB02", "admin_beta"),
+        ("Gamma Solutions Ltd",  "ADMC03", "admin_gamma"),
+        ("Delta Solutions Ltd",  "ADMD04", "admin_delta"),
+    ]
+    for cname, ccode, adm_uname in ADM_COS:
+        cid   = _company(cname, ccode)
+        dept  = _dept("Engineering", cid)
+        _dept("Operations", cid)   # second dept for admin to see — no Customer Success yet
+
+        adm    = _user(adm_uname,                 "admin123", "Sarah Okonkwo",    "admin",    None, cid)
+        mgr    = _user(f"mgr_{ccode.lower()}",    "mgr123",   "Tunde Bakare",     "manager",  dept, cid)
+        ngozi  = _user(f"ngozi_{ccode.lower()}",  "emp123",   "Ngozi Ihejirika",  "employee", dept, cid)
+        femi   = _user(f"femi_{ccode.lower()}",   "emp123",   "Femi Lawal",       "employee", dept, cid)
+        esther = _user(f"esther_{ccode.lower()}", "emp123",   "Esther Ojo",       "employee", dept, cid)
+
+        ps = today - timedelta(days=30)
+        pe = today + timedelta(days=30)
+
+        proj_id, _ = _project(
+            "Q2 Platform Sprint",
+            "Deliver core platform features and resolve the critical backlog for Q2 release.",
+            ps, pe, "active", mgr, dept, cid
+        )
+        for uid in [mgr, ngozi, femi, esther]:
+            _member(proj_id, uid)
+
+        k1, n1 = _kpi("Complete code reviews",
+                      "Review all pull requests assigned during the sprint.",
+                      60, "reviews", pe, mgr, esther, proj_id, dept)
+        if n1:
+            _updates(k1, [
+                (6,  ps+timedelta(days=4),  "Strong start - on track"),
+                (14, ps+timedelta(days=10), "Consistent pace"),
+                (23, ps+timedelta(days=17), "Ahead of schedule"),
+                (33, ps+timedelta(days=24), "Comfortable position"),
+                (42, ps+timedelta(days=29), "Almost there"),
+            ])
+
+        k2, n2 = _kpi("Resolve bug tickets",
+                      "Clear all assigned critical and high-priority bugs from the backlog.",
+                      80, "bugs", pe, mgr, ngozi, proj_id, dept)
+        if n2:
+            _updates(k2, [
+                (2,  ps+timedelta(days=5),  "Slow start"),
+                (5,  ps+timedelta(days=10), "Some blockers encountered"),
+                (9,  ps+timedelta(days=17), "Picking up slightly"),
+                (13, ps+timedelta(days=24), "Still significantly behind"),
+                (17, ps+timedelta(days=29), "Needs urgent support"),
+            ])
+        # femi has NO KPI — just an employee the admin can view
+        # NO "Customer Success" department — admin creates it during the test
+
+    conn.commit()
+    conn.close()
+    print("[OK] Test accounts ensured (20 isolated tester accounts)", flush=True)
