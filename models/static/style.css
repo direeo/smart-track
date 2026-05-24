@@ -445,8 +445,8 @@ body.auth-page footer {
 
 body.auth-page {
     min-height: 100vh;
-    background: linear-gradient(180deg, #0b274e 0%, #1d4ed8 45%, #eff6ff 100%);
-    overflow: auto;
+    background: none;
+    overflow: hidden;
 }
 
 body.auth-page main {
@@ -457,12 +457,13 @@ body.auth-page main {
 
 .auth-frame {
     display: grid;
-    grid-template-columns: 38% 62%;
-    width: min(100%, 860px);
+    grid-template-columns: 50% 50%;
+    width: 100%;
+    max-width: none;
     height: 100vh;
-    margin: 0 auto;
+    margin: 0;
     border-radius: 0;
-    background: transparent;
+    background: none;
 }
 
 .auth-side {
@@ -470,14 +471,17 @@ body.auth-page main {
     align-items: center;
     justify-content: center;
     padding: 10px 12px;
+    border-radius: 0;
 }
 .auth-side-left {
     background: linear-gradient(180deg, #0b2857 0%, #2563eb 100%);
     color: white;
+    border-radius: 0;
 }
 
 .auth-side-right {
-    background: #f8fafc;
+    background: #ffffff;
+    border-radius: 0;
 }
 
 .password-field {
@@ -559,12 +563,12 @@ button.pass-toggle,
 
 .auth-card.compact-card {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     background: white;
-    border-radius: 12px;
-    padding: 12px 14px;
+    border-radius: 8px;
+    padding: 12px 16px;
     border: 1px solid rgba(15, 23, 42, 0.06);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
 }
 
 .auth-header {
