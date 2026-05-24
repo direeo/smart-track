@@ -80,6 +80,53 @@ except Exception as e:
     traceback.print_exc()
     sys.exit(1)
 
+print("[*] Ensuring seeded users exist for deployed environment...", flush=True)
+def ensure_seeded_users():
+    conn = get_conn()
+    comp = conn.execute("SELECT id FROM companies WHERE code=?", ("SEED",)).fetchone()
+    if not comp:
+        conn.execute("INSERT INTO companies (name, code) VALUES (?,?)", ("Seed Company", "SEED"))
+        company_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    else:
+        company_id = comp[0] if isinstance(comp, tuple) else comp["id"]
+    dept = conn.execute("SELECT id FROM departments WHERE name=? AND company_id=?", ("General", company_id)).fetchone()
+    if not dept:
+        conn.execute("INSERT INTO departments (name, company_id) VALUES (?,?)", ("General", company_id))
+        dept_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    else:
+        dept_id = dept[0] if isinstance(dept, tuple) else dept["id"]
+    seeded_users = {
+        "nex_admin": ("admin123", "admin", "Sarah Okonkwo"),
+        "pin_admin": ("admin123", "admin", "James Adeyemi"),
+        "nex_mgr_e": ("mgr123", "manager", "Tunde Bakare"),
+        "nex_mgr_p": ("mgr123", "manager", "Chidi Obi"),
+        "pin_mgr_s": ("mgr123", "manager", "Amaka Eze"),
+        "pin_mgr_o": ("mgr123", "manager", "Emeka Okafor"),
+        "nex_star": ("emp123", "employee", "Esther Ojo"),
+        "nex_steady": ("emp123", "employee", "Kola Adebayo"),
+        "nex_risk": ("emp123", "employee", "Ngozi Ihejirika"),
+        "nex_new": ("emp123", "employee", "Femi Lawal"),
+        "nex_recov": ("emp123", "employee", "Ada Nwosu"),
+        "nex_done": ("emp123", "employee", "Bola Adeleke"),
+        "pin_ace": ("emp123", "employee", "Zainab Musa"),
+        "pin_onpace": ("emp123", "employee", "David Eze"),
+        "pin_behind": ("emp123", "employee", "Chioma Obi"),
+        "pin_great": ("emp123", "employee", "Temi Adesanya"),
+        "pin_ops1": ("emp123", "employee", "Kunle Salami"),
+        "pin_ops2": ("emp123", "employee", "Ngozi Eze"),
+    }
+    for username, (password, role, full_name) in seeded_users.items():
+        dept_id_value = None if role == "admin" else dept_id
+        conn.execute(
+            "INSERT INTO users (username,password,full_name,role,department_id,company_id) "
+            "VALUES (?,?,?,?,?,?) "
+            "ON CONFLICT(username) DO UPDATE SET password=excluded.password, full_name=excluded.full_name, role=excluded.role, department_id=excluded.department_id, company_id=excluded.company_id",
+            (username, hash_pw(password), full_name, role, dept_id_value, company_id)
+        )
+    conn.commit()
+    conn.close()
+ensure_seeded_users()
+print("[OK] Seeded users ensured", flush=True)
 print("[OK] Application startup complete", flush=True)
 
 
