@@ -131,28 +131,55 @@ async def login(request: Request, username: str = Form(...), password: str = For
     ).fetchone()
     # Fallback for deployed instances: if the seeded DB isn't present, create seeded users on first login
     if not user:
-        seeded_usernames = {"nex_admin","pin_admin","nex_mgr_e","nex_mgr_p","nex_star","nex_steady","nex_risk","nex_new","nex_recov","nex_done","pin_mgr_s","pin_mgr_o","pin_ace","pin_onpace","pin_behind","pin_great","pin_ops1","pin_ops2"}
-        seeded_passwords = {"admin123","mgr123","emp123"}
-        if username in seeded_usernames and password in seeded_passwords:
-            # ensure a company exists
-            comp = conn.execute("SELECT id FROM companies LIMIT 1").fetchone()
-            if not comp:
-                conn.execute("INSERT INTO companies (name, code) VALUES (?,?)", ("Seed Company", "SEED"))
-                company_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            else:
-                company_id = comp[0] if isinstance(comp, tuple) else comp["id"]
-            # ensure a General department exists
-            dept = conn.execute("SELECT id FROM departments WHERE name=? AND company_id= ?", ("General", company_id)).fetchone()
-            if not dept:
-                conn.execute("INSERT INTO departments (name, company_id) VALUES (?,?)", ("General", company_id))
-                dept_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            else:
-                dept_id = dept[0] if isinstance(dept, tuple) else dept["id"]
-            # insert the user (use admin role as fallback)
-            conn.execute("INSERT OR IGNORE INTO users (username,password,full_name,role,department_id,company_id) VALUES (?,?,?,?,?,?)",
-                         (username, hash_pw(password), username, "admin", dept_id, company_id))
-            conn.commit()
-            user = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+        seeded_users = {
+            "nex_admin": ("admin123", "admin", "Sarah Okonkwo"),
+            "pin_admin": ("admin123", "admin", "James Adeyemi"),
+            "nex_mgr_e": ("mgr123", "manager", "Tunde Bakare"),
+            "nex_mgr_p": ("mgr123", "manager", "Chidi Obi"),
+            "pin_mgr_s": ("mgr123", "manager", "Amaka Eze"),
+            "pin_mgr_o": ("mgr123", "manager", "Emeka Okafor"),
+            "nex_star": ("emp123", "employee", "Esther Ojo"),
+            "nex_steady": ("emp123", "employee", "Kola Adebayo"),
+            "nex_risk": ("emp123", "employee", "Ngozi Ihejirika"),
+            "nex_new": ("emp123", "employee", "Femi Lawal"),
+            "nex_recov": ("emp123", "employee", "Ada Nwosu"),
+            "nex_done": ("emp123", "employee", "Bola Adeleke"),
+            "pin_ace": ("emp123", "employee", "Zainab Musa"),
+            "pin_onpace": ("emp123", "employee", "David Eze"),
+            "pin_behind": ("emp123", "employee", "Chioma Obi"),
+            "pin_great": ("emp123", "employee", "Temi Adesanya"),
+            "pin_ops1": ("emp123", "employee", "Kunle Salami"),
+            "pin_ops2": ("emp123", "employee", "Ngozi Eze"),
+        }
+        if username in seeded_users:
+            expected_password, role, full_name = seeded_users[username]
+            if password == expected_password:
+                # ensure a company exists
+                comp = conn.execute("SELECT id FROM companies LIMIT 1").fetchone()
+                if not comp:
+                    conn.execute("INSERT INTO companies (name, code) VALUES (?,?)",
+                                 ("Seed Company", "SEED"))
+                    company_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                else:
+                    company_id = comp[0] if isinstance(comp, tuple) else comp["id"]
+                # ensure a General department exists
+                dept = conn.execute("SELECT id FROM departments WHERE name=? AND company_id=?",
+                                    ("General", company_id)).fetchone()
+                if not dept:
+                    conn.execute("INSERT INTO departments (name, company_id) VALUES (?,?)",
+                                 ("General", company_id))
+                    dept_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                else:
+                    dept_id = dept[0] if isinstance(dept, tuple) else dept["id"]
+                # insert or update the user so credentials always match
+                conn.execute(
+                    "INSERT INTO users (username,password,full_name,role,department_id,company_id) "
+                    "VALUES (?,?,?,?,?,?) "
+                    "ON CONFLICT(username) DO UPDATE SET password=excluded.password, full_name=excluded.full_name, role=excluded.role, department_id=excluded.department_id, company_id=excluded.company_id",
+                    (username, hash_pw(password), full_name, role, dept_id if role != 'admin' else None, company_id)
+                )
+                conn.commit()
+                user = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
     conn.close()
     if not user:
         return templates.TemplateResponse("login.html",
