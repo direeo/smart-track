@@ -1,77 +1,117 @@
 {% extends "base.html" %}
-
-{% block title %}Create Company - SmartTrack{% endblock %}
+{% block title %}Create Company — SmartTrack{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 
 {% block content %}
 <div class="auth-frame">
+
+    {# ── Left panel ── #}
     <div class="auth-side auth-side-left">
         <div class="auth-side-content">
-            <h1 class="hero-title">Smarter solutions for a better tomorrow</h1>
-            <p class="hero-copy">Register your company and unlock an intelligent KPI workspace with fast team onboarding.</p>
+            <div style="margin-bottom:32px;">
+                <div style="display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,0.12); padding:8px 16px; border-radius:999px; margin-bottom:24px;">
+                    <span style="font-size:18px;">🚀</span>
+                    <span style="font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.9;">SmartTrack</span>
+                </div>
+                <h1 class="hero-title">Launch your organisation</h1>
+                <p style="color:rgba(255,255,255,0.8); font-size:15px; line-height:1.7; max-width:360px; margin-top:16px;">
+                    Register your company and get a unique code to invite your whole team — managers and employees alike.
+                </p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px; max-width:320px;">
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">🏢</span> Set up company departments instantly
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">📋</span> Assign KPIs and track team progress
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">📊</span> See real-time performance dashboards
+                </div>
+            </div>
         </div>
     </div>
+
+    {# ── Right panel ── #}
     <div class="auth-side auth-side-right">
-        <div class="auth-card compact-card">
+        <div class="auth-card compact-card" style="width:100%; max-width:420px; margin:auto;">
+
+            {% if success %}
+            {# ── Success state ── #}
+            <div style="text-align:center; padding:16px 0;">
+                <div style="font-size:48px; margin-bottom:16px;">🎉</div>
+                <h2 style="font-size:22px; color:var(--text-primary); margin-bottom:8px;">Company created!</h2>
+                <p style="color:var(--text-secondary); font-size:14px; margin-bottom:24px;">
+                    Share your company code with your team so they can join via the sign-up page.
+                </p>
+                <div style="background:linear-gradient(135deg,#f0f7ff,#e8f4fd); border:2px solid var(--primary); border-radius:12px; padding:20px; margin-bottom:24px;">
+                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Your Company Code</div>
+                    <div style="font-size:32px; font-weight:900; letter-spacing:6px; color:var(--primary); font-family:monospace;">{{ success }}</div>
+                </div>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:24px;">
+                    Save this code — you can always find it on your Admin Dashboard.
+                </p>
+                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                    <a href="/login" class="btn btn-secondary">Continue to Login</a>
+                    <a href="/signup" class="btn btn-outline">Team sign-up page</a>
+                </div>
+            </div>
+
+            {% else %}
+            {# ── Registration form ── #}
             <div class="auth-header">
-                <span class="brand-tag">Create account</span>
-                <h2>Launch your organisation</h2>
-                <p class="auth-copy">Register your company and invite staff with a single code.</p>
+                <span class="brand-tag">Create Account</span>
+                <h2 style="font-size:24px; margin:12px 0 6px;">Register your company</h2>
+                <p class="auth-copy">You'll become the admin. Invite your team with a company code.</p>
             </div>
 
             {% if error %}
-            <div class="error">{{ error }}</div>
+            <div class="error" style="margin-bottom:16px;">{{ error }}</div>
             {% endif %}
 
-            {% if success %}
-            <div class="success">
-                <strong>Company created successfully! 🎉</strong>
-                <div class="success-panel">
-                    <p class="small">Your Company Code:</p>
-                    <div class="code-box">{{ success }}</div>
-                </div>
-                <p style="margin-top: 18px;">Share this code with your team to let them join your organisation.</p>
-                <div class="auth-actions" style="margin-top: 24px; justify-content: flex-start;">
-                    <a href="/login" class="btn btn-secondary">Continue to Login</a>
-                    <a href="/signup" class="btn btn-outline">Join company</a>
-                </div>
-            </div>
-            {% else %}
             <form method="post" action="/register">
-                <div class="form-group">
-                    <label for="company_name">Company Name</label>
-                    <input type="text" id="company_name" name="company_name" placeholder="e.g., Acme Corporation" required>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group" style="margin-bottom:14px; grid-column:1/-1;">
+                        <label for="company_name" style="font-size:13px;">Company Name</label>
+                        <input type="text" id="company_name" name="company_name"
+                               placeholder="e.g. Acme Corporation" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label for="full_name" style="font-size:13px;">Your Full Name</label>
+                        <input type="text" id="full_name" name="full_name"
+                               placeholder="Your name" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label for="username" style="font-size:13px;">Username</label>
+                        <input type="text" id="username" name="username"
+                               placeholder="Choose a username" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="full_name">Your Full Name</label>
-                    <input type="text" id="full_name" name="full_name" placeholder="Your name" required>
-                </div>
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Choose a username" required>
-                </div>
-                <div class="form-group password-field">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Create a strong password" required>
-                    <div class="show-password">
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label for="password" style="font-size:13px;">Password</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="Create a strong password" required>
+                    <div class="show-password" style="margin-top:6px;">
                         <label><input type="checkbox" onchange="togglePasswordVisibility('password', this)"> Show password</label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="department_names">Departments</label>
-                    <textarea id="department_names" name="department_names" rows="3" placeholder="One per line (e.g., Sales, Engineering, HR)">Sales
-Engineering
-Human Resources
-Operations</textarea>
-                    <small>Enter each department on a new line</small>
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label for="department_names" style="font-size:13px;">Departments
+                        <span style="font-weight:400; color:var(--text-secondary);">(comma-separated)</span>
+                    </label>
+                    <input type="text" id="department_names" name="department_names"
+                           placeholder="e.g. Sales, Engineering, HR, Operations" required>
+                    <small style="color:var(--text-secondary); font-size:12px;">You can add more departments later from your dashboard.</small>
                 </div>
-                <div class="form-actions">
-                    <input type="submit" value="Create Company" class="btn-primary" style="width: 100%;">
-                </div>
+
+                <input type="submit" value="Create Company" class="btn-primary" style="width:100%; padding:13px;">
             </form>
-            <div class="auth-actions" style="margin-top: 24px; justify-content: flex-start;">
-                <a href="/login" class="btn btn-secondary">Sign in</a>
-                <a href="/signup" class="btn btn-outline">Join company</a>
+
+            <div class="auth-actions" style="margin-top:16px; justify-content:space-between;">
+                <a href="/login" class="btn btn-secondary" style="font-size:13px;">Sign in</a>
+                <a href="/signup" class="btn btn-outline" style="font-size:13px;">Join existing company</a>
             </div>
             {% endif %}
         </div>

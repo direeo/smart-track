@@ -1,38 +1,111 @@
 {% extends "base.html" %}
-
-{% block title %}Manage Departments - SmartTrack{% endblock %}
+{% block title %}{{ dept['name'] }} — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Manage Departments</h2>
-    <p><a href="/admin/dashboard">Back to Admin Dashboard</a></p>
-    
-    <div style="margin: 20px 0;">
-        <a href="/admin/add-department"><button>Add New Department</button></a>
+
+{# ── Stats from members ── #}
+{% set ns = namespace(managers=0, employees=0) %}
+{% for m in members %}
+    {% if m['role'] == 'manager' %}{% set ns.managers = ns.managers + 1 %}{% endif %}
+    {% if m['role'] == 'employee' %}{% set ns.employees = ns.employees + 1 %}{% endif %}
+{% endfor %}
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ dept['name'] }}</span>
+        </div>
+        <h1 class="page-header-title">{{ dept['name'] }}</h1>
+        <p class="page-header-subtitle">Department overview and member list.</p>
     </div>
-    
-    {% if departments %}
-    <table>
-        <tr>
-            <th>Department Name</th>
-            <th>Employees</th>
-            <th>Managers</th>
-            <th>Action</th>
-        </tr>
-        {% for dept in departments %}
-        <tr>
-            <td>{{ dept['name'] }}</td>
-            <td>{{ dept['employee_count'] }}</td>
-            <td>{{ dept['manager_count'] }}</td>
-            <td>
-                <a href="/admin/department/{{ dept['id'] }}/edit"><button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;">Edit</button></a>
-                <a href="/admin/department/{{ dept['id'] }}/delete" onclick="return confirm('Are you sure?');"><button class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Delete</button></a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No departments yet. <a href="/admin/add-department">Create one</a></p>
-    {% endif %}
+    <div class="page-header-actions">
+        <a href="/admin/add-department"><button class="btn-secondary">＋ Add Department</button></a>
+        <a href="/admin/dashboard"><button class="btn-secondary">← Back</button></a>
+    </div>
 </div>
+
+{# ── Stat cards ── #}
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
+    <div class="stat-card">
+        <div class="stat-icon si-blue">👤</div>
+        <div>
+            <div class="stat-value">{{ members | length }}</div>
+            <div class="stat-label">Total Members</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-primary">🏅</div>
+        <div>
+            <div class="stat-icon si-purple">🏅</div>
+            <div class="stat-value">{{ ns.managers }}</div>
+            <div class="stat-label">Managers</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-navy">👥</div>
+        <div>
+            <div class="stat-value">{{ ns.employees }}</div>
+            <div class="stat-label">Employees</div>
+        </div>
+    </div>
+</div>
+
+{# ── Members table ── #}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">👥</span> Department Members</h2>
+</div>
+
+{% if members %}
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Member</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:13px; flex-shrink:0;">
+                                {{ member['full_name'][0] | upper }}
+                            </div>
+                            <strong>{{ member['full_name'] }}</strong>
+                        </div>
+                    </td>
+                    <td style="color:var(--text-secondary); font-family:monospace;">{{ member['username'] }}</td>
+                    <td>
+                        <span class="badge {{ 'badge-purple' if member['role'] == 'admin' else ('badge-primary' if member['role'] == 'manager' else 'badge-gray') }}">
+                            {{ member['role'] | title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if member['role'] == 'employee' %}
+                        <a href="/admin/employee/{{ member['id'] }}">View Profile</a>
+                        {% else %}
+                        <span style="color:var(--text-secondary); font-size:13px;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">👤</span>
+    <h4>No members yet</h4>
+    <p>Employees and managers who join this department will appear here.</p>
+</div>
+{% endif %}
+
 {% endblock %}

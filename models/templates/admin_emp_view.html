@@ -1,86 +1,176 @@
 {% extends "base.html" %}
-
-{% block title %}Employee View - SmartTrack{% endblock %}
+{% block title %}{{ emp['full_name'] }} — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>{{ employee['full_name'] }}</h2>
-    <p><a href="/admin/dashboard">Back to Admin Dashboard</a></p>
-    
-    <h3>Employee Details</h3>
-    <table>
-        <tr>
-            <th>Field</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Username</td>
-            <td>{{ employee['username'] }}</td>
-        </tr>
-        <tr>
-            <td>Full Name</td>
-            <td>{{ employee['full_name'] }}</td>
-        </tr>
-        <tr>
-            <td>Department</td>
-            <td>{{ employee['department_name'] }}</td>
-        </tr>
-        <tr>
-            <td>Role</td>
-            <td>{{ employee['role'] }}</td>
-        </tr>
-    </table>
-    
-    <h3>KPI Performance</h3>
-    {% if kpis %}
-    <table>
-        <tr>
-            <th>KPI Name</th>
-            <th>Project</th>
-            <th>Target</th>
-            <th>Current</th>
-            <th>Status</th>
-        </tr>
-        {% for kpi in kpis %}
-        <tr>
-            <td>{{ kpi['name'] }}</td>
-            <td>{{ kpi['project_name'] }}</td>
-            <td>{{ kpi['target_value'] }}</td>
-            <td>{{ kpi['current_value'] or 'N/A' }}</td>
-            <td>
-                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
-                <span style="color: #27ae60;">✓ Achieved</span>
-                {% else %}
-                <span style="color: #f39c12;">● In Progress</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No KPIs assigned.</p>
+
+{# ── KPI stats ── #}
+{% set ns = namespace(achieved=0, total=0) %}
+{% for kpi in kpis %}
+    {% set ns.total = ns.total + 1 %}
+    {% if kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+        {% set ns.achieved = ns.achieved + 1 %}
     {% endif %}
-    
-    <h3>Recent Updates</h3>
-    {% if recent_updates %}
-    <table>
-        <tr>
-            <th>KPI</th>
-            <th>Value</th>
-            <th>Date</th>
-            <th>Note</th>
-        </tr>
-        {% for update in recent_updates %}
-        <tr>
-            <td>{{ update['kpi_name'] }}</td>
-            <td>{{ update['value'] }}</td>
-            <td>{{ update['updated_at'] }}</td>
-            <td>{{ update['note'] or '-' }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No recent updates.</p>
-    {% endif %}
+{% endfor %}
+{% set perf_pct = ((ns.achieved / ns.total * 100) | int) if ns.total > 0 else 0 %}
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>Employee Profile</span>
+        </div>
+        <h1 class="page-header-title">{{ emp['full_name'] }}</h1>
+        <p class="page-header-subtitle">
+            {{ emp['dept_name'] or 'No Department' }} ·
+            <span class="badge {{ 'badge-purple' if emp['role'] == 'admin' else ('badge-primary' if emp['role'] == 'manager' else 'badge-gray') }}" style="vertical-align:middle;">
+                {{ emp['role'] | title }}
+            </span>
+        </p>
+    </div>
+    <a href="/admin/dashboard"><button class="btn-secondary">← Back</button></a>
 </div>
+
+{# ── Stat cards ── #}
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
+    <div class="stat-card">
+        <div class="stat-icon si-navy">📊</div>
+        <div>
+            <div class="stat-value">{{ ns.total }}</div>
+            <div class="stat-label">Total KPIs</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-green">✅</div>
+        <div>
+            <div class="stat-value">{{ ns.achieved }}</div>
+            <div class="stat-label">Achieved</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-amber">🔄</div>
+        <div>
+            <div class="stat-value">{{ ns.total - ns.achieved }}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon {{ 'si-green' if perf_pct >= 80 else ('si-amber' if perf_pct >= 60 else 'si-red') }}">
+            {% if perf_pct >= 80 %}🏆{% elif perf_pct >= 60 %}📈{% else %}⚠️{% endif %}
+        </div>
+        <div>
+            <div class="stat-value">{{ perf_pct }}%</div>
+            <div class="stat-label">Achievement Rate</div>
+        </div>
+    </div>
+</div>
+
+<div class="two-col">
+    {# ── Profile details ── #}
+    <div>
+        <div class="section-header">
+            <h2 class="section-title"><span class="section-icon">👤</span> Profile</h2>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-key">Username</span>
+                        <span class="detail-val" style="font-family:monospace;">{{ emp['username'] }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-key">Full Name</span>
+                        <span class="detail-val">{{ emp['full_name'] }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-key">Department</span>
+                        <span class="detail-val">{{ emp['dept_name'] or '—' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-key">Role</span>
+                        <span class="detail-val">
+                            <span class="badge {{ 'badge-purple' if emp['role'] == 'admin' else ('badge-primary' if emp['role'] == 'manager' else 'badge-gray') }}">
+                                {{ emp['role'] | title }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-key">Status</span>
+                        <span class="detail-val"><span class="badge badge-success">Active</span></span>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Role promotion form ── #}
+            <div class="card-footer" style="padding:14px 20px; border-top:1px solid var(--border); background:#f8fafc;">
+                <form method="post" action="/admin/change-role"
+                      style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"
+                      onsubmit="return confirm('Change this user\'s role? This action may affect their access immediately.');">
+                    <input type="hidden" name="user_id" value="{{ emp['id'] }}">
+                    <label for="new_role_{{ emp['id'] }}" style="font-size:13px; font-weight:600; color:var(--text-secondary); white-space:nowrap;">Change Role:</label>
+                    <select id="new_role_{{ emp['id'] }}" name="new_role"
+                            style="padding:7px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:white; flex:1; min-width:140px;">
+                        <option value="employee" {{ 'selected' if emp['role'] == 'employee' }}>Employee</option>
+                        <option value="manager"  {{ 'selected' if emp['role'] == 'manager'  }}>Manager</option>
+                        <option value="admin"    {{ 'selected' if emp['role'] == 'admin'    }}>Admin</option>
+                    </select>
+                    <button type="submit" style="padding:7px 16px; background:var(--primary); color:white; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">
+                        Save Role
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ── KPI Performance ── #}
+    <div>
+        <div class="section-header">
+            <h2 class="section-title"><span class="section-icon">📊</span> KPI Performance</h2>
+        </div>
+        {% if kpis %}
+        <div class="card">
+            <div class="card-body">
+                {% for kpi in kpis %}
+                {# current_value is added as a subquery in the app route #}
+                {% set current  = kpi['current_value'] if kpi['current_value'] is not none else 0 %}
+                {% set target   = kpi['target_value']  if kpi['target_value'] else 1 %}
+                {% set pct_raw  = (current / target * 100) %}
+                {% set pct      = pct_raw if pct_raw <= 100 else 100 %}
+                {% set achieved = kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+
+                <div class="kpi-row">
+                    <div class="kpi-row-main">
+                        <div class="kpi-row-name">{{ kpi['title'] }}</div>
+                        <div class="kpi-row-sub" style="margin-bottom:5px;">{{ kpi['project_name'] or 'N/A' }}</div>
+                        <div class="progress-meta">
+                            <span>{{ current }} / {{ kpi['target_value'] }} {{ kpi['unit'] }}</span>
+                            <span>{{ pct | int }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill {{ 'pf-success' if achieved else ('pf-warning' if pct >= 50 else 'pf-danger') }}"
+                                 style="width:{{ pct }}%;"></div>
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0;">
+                        {% if achieved %}
+                        <span class="badge badge-success">✓</span>
+                        {% else %}
+                        <span class="badge badge-warning">●</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">📊</span>
+            <h4>No KPIs assigned</h4>
+            <p>This employee has not been assigned any KPIs yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}

@@ -4,63 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SmartTrack KPI System{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=10">
-    <style>
-        .pass-toggle,
-        button.pass-toggle,
-        #password-toggle {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            width: 0 !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=20">
     <meta name="description" content="SmartTrack KPI Management System — modern KPI tracking for teams and managers.">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+
     {% set auth_paths = ['/', '/login', '/register', '/signup'] %}
     {% if request.url.path not in auth_paths %}
-    <header class="app-header">
-        <div class="header-inner">
-            <div>
-                <span class="brand-tag">SmartTrack</span>
-                <h1>KPI Management</h1>
-                <p class="header-copy">Track goals, measure performance, and keep every team aligned with a clear and modern dashboard.</p>
-            </div>
-            <div class="header-cta">
-                <a href="/register" class="btn btn-outline">Create company</a>
-            </div>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">S</div>
+            <span class="navbar-title">SmartTrack</span>
+            <div class="navbar-divider"></div>
         </div>
-    </header>
-    {% if request.session.get('user_id') %}
-    <nav>
-        <a href="/{% if user %}{{ user['role'] }}{% endif %}/dashboard">Dashboard</a>
-        <a href="/logout" style="float: right;">Logout</a>
+
+        <div class="navbar-links">
+            {% if request.session.get('user_id') and user %}
+            <a href="/{{ user['role'] }}/dashboard">
+                📊 Dashboard
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="navbar-user">
+            {% if request.session.get('user_id') and user %}
+            <div class="user-avatar">{{ user['full_name'][0] | upper if user['full_name'] else 'U' }}</div>
+            <div class="user-info">
+                <div class="user-name-text">{{ user['full_name'] }}</div>
+                <div class="user-role-text">{{ user['role'] | title }}</div>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+            {% endif %}
+        </div>
     </nav>
     {% endif %}
-    {% endif %}
+
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    {% if request.url.path not in auth_paths %}
     <footer>
-        <p>&copy; 2024 SmartTrack KPI System. All rights reserved.</p>
+        <p>&copy; 2025 SmartTrack KPI System. All rights reserved.</p>
     </footer>
+    {% endif %}
+
     <script>
+        function togglePasswordVisibility(fieldId, checkbox) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.type = checkbox.checked ? 'text' : 'password';
+        }
         function toggleSampleLogins() {
             const panel = document.getElementById('sample-logins');
             const button = document.getElementById('show-sample-btn');
             if (!panel || !button) return;
             panel.classList.toggle('hidden');
             button.textContent = panel.classList.contains('hidden') ? 'View sample logins' : 'Hide sample logins';
-        }
-        function togglePasswordVisibility(fieldId, checkbox) {
-            const field = document.getElementById(fieldId);
-            if (!field) return;
-            field.type = checkbox.checked ? 'text' : 'password';
         }
     </script>
     {% block extra_js %}{% endblock %}

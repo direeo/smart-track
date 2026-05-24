@@ -1,40 +1,103 @@
 {% extends "base.html" %}
-
-{% block title %}Employee Project - SmartTrack{% endblock %}
+{% block title %}{{ project['name'] }} — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>{{ project['name'] }}</h2>
-    <p><strong>Description:</strong> {{ project['description'] }}</p>
-    <p><strong>Manager:</strong> {{ project['manager_name'] }}</p>
-    <p><a href="/employee/dashboard">Back to Dashboard</a></p>
-    
-    <h3>Project KPIs</h3>
-    {% if kpis %}
-    <table>
-        <tr>
-            <th>KPI Name</th>
-            <th>Target</th>
-            <th>Current</th>
-            <th>Status</th>
-        </tr>
-        {% for kpi in kpis %}
-        <tr>
-            <td><a href="/employee/kpi/{{ kpi['id'] }}">{{ kpi['name'] }}</a></td>
-            <td>{{ kpi['target_value'] }}</td>
-            <td>{{ kpi['current_value'] or 'N/A' }}</td>
-            <td>
-                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
-                <span style="color: #27ae60;">✓ Achieved</span>
-                {% else %}
-                <span style="color: #f39c12;">● In Progress</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No KPIs for this project yet.</p>
-    {% endif %}
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/employee/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ project['name'] }}</span>
+        </div>
+        <h1 class="page-header-title">{{ project['name'] }}</h1>
+        <p class="page-header-subtitle">{{ project['description'] or 'No description provided.' }}</p>
+    </div>
+    <a href="/employee/dashboard"><button class="btn-secondary">← Back</button></a>
 </div>
+
+{# ── KPI count stats ── #}
+{% set ns = namespace(achieved=0, total=0) %}
+{% for kpi in kpis %}
+    {% set ns.total = ns.total + 1 %}
+    {% if kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+        {% set ns.achieved = ns.achieved + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% if kpis %}
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
+    <div class="stat-card">
+        <div class="stat-icon si-navy">📊</div>
+        <div>
+            <div class="stat-value">{{ ns.total }}</div>
+            <div class="stat-label">My KPIs</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-green">✅</div>
+        <div>
+            <div class="stat-value">{{ ns.achieved }}</div>
+            <div class="stat-label">Achieved</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-amber">🔄</div>
+        <div>
+            <div class="stat-value">{{ ns.total - ns.achieved }}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">📊</span> Project KPIs</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% for kpi in kpis %}
+        {% set current  = kpi['current_value'] if kpi['current_value'] is not none else 0 %}
+        {% set target   = kpi['target_value']  if kpi['target_value'] else 1 %}
+        {% set pct_raw  = (current / target * 100) %}
+        {% set pct      = pct_raw if pct_raw <= 100 else 100 %}
+        {% set achieved = kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+
+        <div class="kpi-row">
+            <div class="kpi-row-main">
+                <div class="kpi-row-name">
+                    <a href="/employee/kpi/{{ kpi['id'] }}">{{ kpi['title'] }}</a>
+                </div>
+                <div class="kpi-row-sub" style="margin-bottom:5px;">Due: {{ kpi['deadline'] }}</div>
+                <div class="progress-meta">
+                    <span>{{ current }} / {{ kpi['target_value'] }} {{ kpi['unit'] }}</span>
+                    <span>{{ pct | int }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill {{ 'pf-success' if achieved else ('pf-warning' if pct >= 50 else 'pf-danger') }}"
+                         style="width:{{ pct }}%;"></div>
+                </div>
+            </div>
+            <div class="kpi-row-right" style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                {% if achieved %}
+                <span class="badge badge-success">✓ Achieved</span>
+                {% else %}
+                <span class="badge badge-warning">● In Progress</span>
+                {% endif %}
+                <a href="/employee/kpi/{{ kpi['id'] }}" class="btn btn-sm">Update</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">📊</span>
+    <h4>No KPIs assigned</h4>
+    <p>Your manager hasn't assigned any KPIs to you in this project yet.</p>
+</div>
+{% endif %}
+
 {% endblock %}

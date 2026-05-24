@@ -1,26 +1,54 @@
 {% extends "base.html" %}
-
-{% block title %}Add Department - SmartTrack{% endblock %}
+{% block title %}Add Department — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 500px; margin: 50px auto;">
-    <h2>Add New Department</h2>
+
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/admin/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <a href="/admin/manage-departments">Departments</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>Add</span>
+        </div>
+        <h1 class="page-header-title">Add Department</h1>
+        <p class="page-header-subtitle">Create a new organisational unit for your company.</p>
+    </div>
+    <a href="/admin/manage-departments"><button class="btn-secondary">← Back</button></a>
+</div>
+
+<div class="form-card">
+    <div class="form-card-header">
+        <h2>Department Details</h2>
+        <p>Give your department a clear, descriptive name.</p>
+    </div>
+
     {% if error %}
     <div class="error">{{ error }}</div>
     {% endif %}
+
     {% if success %}
-    <div class="success">Department created successfully! <a href="/admin/manage-departments">View all departments</a></div>
+    <div class="success">
+        Department created successfully!
+        <a href="/admin/manage-departments" style="margin-left:8px; color:inherit; text-decoration:underline;">View all departments →</a>
+    </div>
     {% endif %}
-    
+
     {% if not success %}
     <form method="post" action="/admin/add-department">
         <div class="form-group">
-            <label for="name">Department Name:</label>
-            <input type="text" id="name" name="name" placeholder="e.g., Engineering, Sales, HR" required>
+            <label for="name">Department Name</label>
+            <input type="text" id="name" name="name"
+                   placeholder="e.g. Engineering, Sales, Human Resources" required>
         </div>
-        <button type="submit">Create Department</button>
-        <a href="/admin/manage-departments"><button type="button" class="btn-secondary">Cancel</button></a>
+
+        <div class="form-actions">
+            <button type="submit">Create Department</button>
+            <a href="/admin/manage-departments"><button type="button" class="btn-secondary">Cancel</button></a>
+        </div>
     </form>
     {% endif %}
 </div>
+
 {% endblock %}

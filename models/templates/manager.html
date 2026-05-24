@@ -1,68 +1,94 @@
 {% extends "base.html" %}
-
-{% block title %}Manager Dashboard - SmartTrack{% endblock %}
+{% block title %}Manager Dashboard — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Manager Dashboard</h2>
-    <p>Welcome, <strong>{{ user['full_name'] }}</strong>!</p>
-    
-    <div style="margin: 20px 0;">
-        <a href="/manager/create-project"><button>Create Project</button></a>
+
+{# ── Aggregate stats from projects ── #}
+{% set ns = namespace(total_members=0) %}
+{% for p in projects %}
+    {% set ns.total_members = ns.total_members + p['member_count'] %}
+{% endfor %}
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Manager Dashboard</h1>
+        <p class="page-header-subtitle">Welcome back, <strong>{{ user['full_name'] }}</strong>
+            {% if user['dept_name'] %} · {{ user['dept_name'] }}{% endif %}
+        </p>
     </div>
-    
-    <h3>My Projects</h3>
-    {% if projects %}
-    <table>
-        <tr>
-            <th>Project Name</th>
-            <th>Description</th>
-            <th>Team Members</th>
-            <th>Action</th>
-        </tr>
-        {% for project in projects %}
-        <tr>
-            <td>{{ project['name'] }}</td>
-            <td>{{ project['description'] }}</td>
-            <td>{{ project['member_count'] }}</td>
-            <td><a href="/manager/project/{{ project['id'] }}">Manage</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No projects yet. <a href="/manager/create-project">Create one</a></p>
-    {% endif %}
-    
-    <h3>Team Performance</h3>
-    {% if team_members %}
-    <table>
-        <tr>
-            <th>Team Member</th>
-            <th>KPIs Completed</th>
-            <th>KPIs Missed</th>
-            <th>Performance %</th>
-            <th>Status</th>
-        </tr>
-        {% for member in team_members %}
-        <tr>
-            <td>{{ member['full_name'] }}</td>
-            <td>{{ member['kpis_completed'] }}</td>
-            <td>{{ member['kpis_missed'] }}</td>
-            <td>{{ member['performance_pct'] }}%</td>
-            <td>
-                {% if member['performance_pct'] >= 80 %}
-                <span style="color: #27ae60;">✓ Excellent</span>
-                {% elif member['performance_pct'] >= 60 %}
-                <span style="color: #f39c12;">● Good</span>
-                {% else %}
-                <span style="color: #e74c3c;">✗ Needs Attention</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No team members assigned yet.</p>
-    {% endif %}
+    <div class="page-header-actions">
+        <a href="/manager/project/new"><button>＋ New Project</button></a>
+    </div>
 </div>
+
+{# ── Stat cards ── #}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon si-blue">📁</div>
+        <div>
+            <div class="stat-value">{{ projects | length }}</div>
+            <div class="stat-label">Projects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-purple">👥</div>
+        <div>
+            <div class="stat-value">{{ ns.total_members }}</div>
+            <div class="stat-label">Team Slots</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-green">✅</div>
+        <div>
+            {% set active_count = projects | selectattr('status', 'equalto', 'active') | list | length %}
+            <div class="stat-value">{{ active_count }}</div>
+            <div class="stat-label">Active Projects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-amber">📊</div>
+        <div>
+            {% set done_count = projects | selectattr('status', 'equalto', 'completed') | list | length %}
+            <div class="stat-value">{{ done_count }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+</div>
+
+{# ── Projects ── #}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">📁</span> My Projects</h2>
+    <a href="/manager/project/new" class="btn btn-sm">＋ New Project</a>
+</div>
+
+{% if projects %}
+<div class="project-grid">
+    {% for project in projects %}
+    <a class="project-card" href="/manager/project/{{ project['id'] }}">
+        <div class="project-card-top">
+            <h3 class="project-card-name">{{ project['name'] }}</h3>
+            <span class="badge {{ 'badge-success' if project['status'] == 'completed' else 'badge-primary' }}">
+                {{ project['status'] | title }}
+            </span>
+        </div>
+        <p class="project-card-desc">{{ project['description'] or 'No description provided.' }}</p>
+        <div class="project-card-footer">
+            <span class="project-meta">
+                <strong>{{ project['member_count'] }}</strong> member{{ 's' if project['member_count'] != 1 }}
+                · Due {{ project['end_date'] }}
+            </span>
+            <span class="project-arrow">Manage →</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">📋</span>
+    <h4>No projects yet</h4>
+    <p>Create your first project to start assigning KPIs to your team.</p>
+</div>
+{% endif %}
+
 {% endblock %}

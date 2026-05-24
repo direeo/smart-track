@@ -1,50 +1,435 @@
 {% extends "base.html" %}
-
-{% block title %}KPI Details - SmartTrack{% endblock %}
+{% block title %}{{ kpi['title'] }} — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>{{ kpi['name'] }}</h2>
-    <p><strong>Target Value:</strong> {{ kpi['target_value'] }}</p>
-    <p><strong>Current Value:</strong> {{ kpi['current_value'] or 'Not yet updated' }}</p>
-    <p><strong>Last Updated:</strong> {{ kpi['last_updated'] or 'Never' }}</p>
-    <p><strong>Project:</strong> {{ kpi['project_name'] }}</p>
-    
-    <h3>Historical Data</h3>
-    {% if updates %}
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Value</th>
-            <th>Note</th>
-        </tr>
-        {% for update in updates %}
-        <tr>
-            <td>{{ update['updated_at'] }}</td>
-            <td>{{ update['value'] }}</td>
-            <td>{{ update['note'] or '-' }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No historical updates yet.</p>
-    {% endif %}
-    
-    {% if user['role'] == 'employee' %}
-    <h3>Update KPI</h3>
+
+{# ── Derive current value from updates list (not stored on kpi row) ── #}
+{% set ns = namespace(current=0, last_date='Never') %}
+{% for u in updates %}
+    {% set ns.current = u['value'] %}
+    {% set ns.last_date = u['updated_at'] %}
+{% endfor %}
+
+{% set target   = kpi['target_value'] if kpi['target_value'] else 1 %}
+{% set pct_raw  = (ns.current / target * 100) %}
+{% set pct      = pct_raw if pct_raw <= 100 else 100 %}
+{% set achieved = ns.current >= kpi['target_value'] and updates|length > 0 %}
+
+{# ── Breadcrumb & header ── #}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/{{ user['role'] }}/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ kpi['project_name'] or 'KPI' }}</span>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ kpi['title'] }}</span>
+        </div>
+        <h1 class="page-header-title">{{ kpi['title'] }}</h1>
+        <p class="page-header-subtitle">
+            Project: <strong>{{ kpi['project_name'] or '—' }}</strong>
+            {% if kpi['assignee_name'] %} · Assigned to: <strong>{{ kpi['assignee_name'] }}</strong>{% endif %}
+        </p>
+    </div>
+    <div class="page-header-actions">
+        {% if updates|length == 0 %}
+        <span class="badge badge-gray" style="font-size:13px; padding:8px 16px;">No Updates Yet</span>
+        {% elif achieved %}
+        <span class="badge badge-success" style="font-size:13px; padding:8px 16px;">✓ Achieved</span>
+        {% else %}
+        <span class="badge badge-warning" style="font-size:13px; padding:8px 16px;">● In Progress</span>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Stat cards ── #}
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
+    <div class="stat-card">
+        <div class="stat-icon si-blue">🎯</div>
+        <div>
+            <div class="stat-value">{{ kpi['target_value'] }}</div>
+            <div class="stat-label">Target ({{ kpi['unit'] }})</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon {{ 'si-green' if achieved else ('si-amber' if pct >= 50 else 'si-red') }}">📈</div>
+        <div>
+            <div class="stat-value">{{ ns.current if updates|length > 0 else '—' }}</div>
+            <div class="stat-label">Current ({{ kpi['unit'] }})</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon {{ 'si-green' if pct >= 80 else ('si-amber' if pct >= 50 else 'si-red') }}">⚡</div>
+        <div>
+            <div class="stat-value">{{ pct | int }}%</div>
+            <div class="stat-label">Progress</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-navy">📅</div>
+        <div>
+            <div class="stat-value" style="font-size:13px; line-height:1.4;">{{ kpi['deadline'] or '—' }}</div>
+            <div class="stat-label">Deadline</div>
+        </div>
+    </div>
+</div>
+
+{# ── Progress bar ── #}
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-weight:600; font-size:15px; color:var(--text-primary);">Overall Progress</span>
+            <span style="font-weight:700; font-size:18px;">{{ pct | int }}%</span>
+        </div>
+        <div class="progress-bar" style="height:14px;">
+            <div class="progress-fill {{ 'pf-success' if achieved else ('pf-warning' if pct >= 50 else 'pf-danger') }}"
+                 style="width:{{ pct }}%;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-secondary);">
+            <span>0 {{ kpi['unit'] }}</span>
+            <span>Target: {{ kpi['target_value'] }} {{ kpi['unit'] }}</span>
+        </div>
+    </div>
+</div>
+
+{# ── AI Analysis buttons ── #}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">🤖</span> AI Analysis</h2>
+</div>
+<div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+    <button class="btn-ai" id="btn-forecast" onclick="runForecast()">
+        <span id="forecast-btn-icon">📊</span> Run KPI Forecast
+    </button>
+    <button class="btn-ai btn-ai-purple" id="btn-behaviour" onclick="runBehaviour()">
+        <span id="behaviour-btn-icon">🧠</span> Behaviour Analysis
+    </button>
+</div>
+
+{# ── Forecast panel ── #}
+<div id="forecast-panel" class="ai-panel" style="display:none; margin-bottom:20px;">
+    <div class="ai-panel-header">
+        <span class="ai-panel-icon">📊</span>
+        <strong>KPI Forecast</strong>
+        <span id="forecast-status-badge" class="badge" style="margin-left:8px;"></span>
+        <button class="ai-panel-close" onclick="closePanel('forecast-panel')">✕</button>
+    </div>
+    <div id="forecast-loading" class="ai-loading">
+        <div class="spinner"></div> Generating forecast…
+    </div>
+    <div id="forecast-content" style="display:none;">
+        <div class="ai-stat-row">
+            <div class="ai-stat">
+                <div class="ai-stat-label">Current Value</div>
+                <div class="ai-stat-value" id="fc-current">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Target</div>
+                <div class="ai-stat-value" id="fc-target">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Forecast (next period)</div>
+                <div class="ai-stat-value" id="fc-forecast">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Trend</div>
+                <div class="ai-stat-value" id="fc-trend">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Confidence</div>
+                <div class="ai-stat-value" id="fc-confidence">—</div>
+            </div>
+        </div>
+        <div class="ai-recommendation" id="fc-recommendation"></div>
+    </div>
+</div>
+
+{# ── Behaviour Analysis panel ── #}
+<div id="behaviour-panel" class="ai-panel" style="display:none; margin-bottom:24px;">
+    <div class="ai-panel-header">
+        <span class="ai-panel-icon">🧠</span>
+        <strong>Behaviour Analysis</strong>
+        <span id="behaviour-risk-badge" class="badge" style="margin-left:8px;"></span>
+        <button class="ai-panel-close" onclick="closePanel('behaviour-panel')">✕</button>
+    </div>
+    <div id="behaviour-loading" class="ai-loading">
+        <div class="spinner"></div> Analysing behaviour patterns…
+    </div>
+    <div id="behaviour-content" style="display:none;">
+        <div class="ai-stat-row">
+            <div class="ai-stat">
+                <div class="ai-stat-label">Risk Level</div>
+                <div class="ai-stat-value" id="bh-risk">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Achievement Probability</div>
+                <div class="ai-stat-value" id="bh-prob">—</div>
+            </div>
+            <div class="ai-stat">
+                <div class="ai-stat-label">Days Remaining</div>
+                <div class="ai-stat-value" id="bh-days">—</div>
+            </div>
+        </div>
+        <div class="ai-recommendation" id="bh-recommendation" style="margin-bottom:16px;"></div>
+
+        {# three-option block — shown only when at risk #}
+        <div id="bh-options-block" style="display:none;">
+            <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">Recommended Actions</div>
+            <div class="action-options">
+                <div class="action-option" id="bh-opt-1">
+                    <div class="action-option-num">1</div>
+                    <div id="bh-opt-1-text"></div>
+                </div>
+                <div class="action-option" id="bh-opt-2">
+                    <div class="action-option-num">2</div>
+                    <div id="bh-opt-2-text"></div>
+                </div>
+                <div class="action-option" id="bh-opt-3">
+                    <div class="action-option-num">3</div>
+                    <div id="bh-opt-3-text"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Update form (employee only) ── #}
+{% if user['role'] == 'employee' %}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">✏️</span> Log an Update</h2>
+</div>
+
+<div class="form-card" style="margin: 0 0 32px;">
     <form method="post" action="/employee/kpi/{{ kpi['id'] }}/update">
         <div class="form-group">
-            <label for="value">New Value:</label>
-            <input type="number" id="value" name="value" step="0.01" required>
+            <label for="value">New Value <span style="font-weight:400; color:var(--text-secondary);">({{ kpi['unit'] }})</span></label>
+            <input type="number" id="value" name="value" step="0.01"
+                   placeholder="e.g. {{ kpi['target_value'] }}" required>
         </div>
         <div class="form-group">
-            <label for="note">Note:</label>
-            <textarea id="note" name="note" rows="3"></textarea>
+            <label for="note">Note <span style="font-weight:400; color:var(--text-secondary);">(optional)</span></label>
+            <textarea id="note" name="note" rows="3"
+                      placeholder="Describe what you accomplished…"></textarea>
         </div>
-        <input type="submit" value="Update KPI">
+        <div class="form-actions">
+            <input type="submit" value="Save Update">
+            <a href="/{{ user['role'] }}/dashboard"><button type="button" class="btn-secondary">Cancel</button></a>
+        </div>
     </form>
-    {% endif %}
-    
-    <p><a href="javascript:history.back()">Back</a></p>
 </div>
+{% endif %}
+
+{# ── History ── #}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">🕐</span> Update History</h2>
+</div>
+
+{% if updates %}
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Value ({{ kpi['unit'] }})</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set rev = updates | reverse | list %}
+                {% for update in rev %}
+                <tr>
+                    <td style="color:var(--text-secondary); font-size:12px;">{{ loop.index }}</td>
+                    <td style="color:var(--text-secondary); font-size:13px; white-space:nowrap;">{{ update['updated_at'] }}</td>
+                    <td><span class="badge badge-primary">{{ update['value'] }}</span></td>
+                    <td>{{ update['note'] or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">📝</span>
+    <h4>No updates yet</h4>
+    <p>{% if user['role'] == 'employee' %}Log your first progress update using the form above.{% else %}The employee hasn't logged any updates yet.{% endif %}</p>
+</div>
+{% endif %}
+
+{# Pass KPI metadata to JS via a hidden element so the JS block stays template-expression-free #}
+<div id="kpi-meta"
+     data-kpi-id="{{ kpi['id'] }}"
+     data-unit="{{ kpi['unit'] }}"
+     style="display:none;"></div>
+
+{# AI Analysis JavaScript #}
+<script>
+const _kpiMeta = document.getElementById('kpi-meta');
+const KPI_ID   = _kpiMeta.dataset.kpiId;
+const UNIT      = _kpiMeta.dataset.unit;
+
+const RISK_OPTIONS = {
+    low: [
+        "Continue at your current pace — you are on track to achieve or exceed the target.",
+        "Log updates regularly to keep visibility high and confirm positive momentum.",
+        "Consider sharing your approach with colleagues as a team best practice."
+    ],
+    medium: [
+        "Increase effort by roughly 20% this week to strengthen your trajectory.",
+        "Review your current workflow for any blockers or inefficiencies that can be removed.",
+        "Log progress updates more frequently so any deviation is spotted early."
+    ],
+    medium_high: [
+        "Escalate to your manager now — flag the risk so additional resources can be allocated.",
+        "Identify the top two blockers and address them before the end of this week.",
+        "Negotiate a realistic milestone adjustment with your manager to keep momentum visible."
+    ],
+    high: [
+        "Escalate immediately to your manager and agree on an urgent action plan.",
+        "Request a deadline extension if the remaining gap is still achievable with extra effort.",
+        "Adjust the target value in consultation with your manager to a realistic revised figure."
+    ],
+    critical: [
+        "Initiate a formal review with your manager — deadline has passed or progress has stalled.",
+        "Document what was achieved and what gaps remain for a retrospective discussion.",
+        "Agree on a clear next step: either close the KPI or set a revised target with a new deadline."
+    ],
+    unknown: [
+        "Ensure KPI updates are being logged so the system has enough data to analyse.",
+        "Speak with your manager to clarify expectations and confirm the target is still valid.",
+        "Review whether the KPI deadline and target are correctly configured."
+    ]
+};
+
+function trendIcon(trend) {
+    if (trend === 'up')      return '↑ Rising';
+    if (trend === 'down')    return '↓ Declining';
+    return '→ Stable';
+}
+
+function riskBadgeClass(risk) {
+    const map = {
+        low: 'badge-success',
+        medium: 'badge-warning',
+        medium_high: 'badge-warning',
+        high: 'badge-danger',
+        critical: 'badge-danger',
+        unknown: 'badge-gray'
+    };
+    return map[risk] || 'badge-gray';
+}
+
+function riskLabel(risk) {
+    const map = {
+        low: '✓ Low Risk',
+        medium: '● Medium Risk',
+        medium_high: '⚠ Moderate-High Risk',
+        high: '⚠ High Risk',
+        critical: '✕ Critical',
+        unknown: '? Unknown'
+    };
+    return map[risk] || risk;
+}
+
+async function runForecast() {
+    const btn = document.getElementById('btn-forecast');
+    const panel = document.getElementById('forecast-panel');
+    const loading = document.getElementById('forecast-loading');
+    const content = document.getElementById('forecast-content');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Generating…';
+    panel.style.display = 'block';
+    loading.style.display = 'flex';
+    content.style.display = 'none';
+
+    try {
+        const res = await fetch(`/api/predict/${KPI_ID}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        document.getElementById('fc-current').textContent    = `${d.current} ${UNIT}`;
+        document.getElementById('fc-target').textContent     = `${d.target} ${UNIT}`;
+        document.getElementById('fc-forecast').textContent   = `${d.forecast !== undefined ? d.forecast.toFixed(1) : '—'} ${UNIT}`;
+        document.getElementById('fc-trend').textContent      = trendIcon(d.trend);
+        document.getElementById('fc-confidence').textContent = d.confidence !== undefined
+            ? `${(d.confidence * 100).toFixed(0)}%` : '—';
+
+        const recEl = document.getElementById('fc-recommendation');
+        recEl.innerHTML = `<strong>Analysis:</strong> ${d.recommendation || '—'}`;
+
+        const statusBadge = document.getElementById('forecast-status-badge');
+        statusBadge.textContent = d.status === 'success' ? 'ARIMA Model' :
+                                   d.status === 'simple_trend' ? 'Linear Trend' :
+                                   d.status === 'insufficient_data' ? 'Insufficient Data' : d.status;
+        statusBadge.className = 'badge ' + (d.status === 'success' ? 'badge-success' :
+                                             d.status === 'error' ? 'badge-danger' : 'badge-warning');
+
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    } catch (err) {
+        loading.innerHTML = `<span style="color:var(--danger);">⚠ Failed to load forecast: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>📊</span> Re-run Forecast';
+    }
+}
+
+async function runBehaviour() {
+    const btn = document.getElementById('btn-behaviour');
+    const panel = document.getElementById('behaviour-panel');
+    const loading = document.getElementById('behaviour-loading');
+    const content = document.getElementById('behaviour-content');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Analysing…';
+    panel.style.display = 'block';
+    loading.style.display = 'flex';
+    content.style.display = 'none';
+
+    try {
+        const res = await fetch(`/api/behaviour/${KPI_ID}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        const risk = d.risk_level || 'unknown';
+
+        document.getElementById('bh-risk').textContent = riskLabel(risk);
+        document.getElementById('bh-prob').textContent =
+            d.achievement_probability !== undefined ? `${d.achievement_probability.toFixed(0)}%` : '—';
+        document.getElementById('bh-days').textContent =
+            d.days_remaining !== undefined
+                ? (d.days_remaining < 0 ? 'Overdue' : `${d.days_remaining} days`)
+                : '—';
+
+        const recEl = document.getElementById('bh-recommendation');
+        recEl.innerHTML = `<strong>Assessment:</strong> ${d.recommendation || '—'}`;
+
+        const badge = document.getElementById('behaviour-risk-badge');
+        badge.textContent = riskLabel(risk);
+        badge.className = 'badge ' + riskBadgeClass(risk);
+
+        // Show the three action options
+        const options = RISK_OPTIONS[risk] || RISK_OPTIONS['unknown'];
+        document.getElementById('bh-opt-1-text').textContent = options[0];
+        document.getElementById('bh-opt-2-text').textContent = options[1];
+        document.getElementById('bh-opt-3-text').textContent = options[2];
+        document.getElementById('bh-options-block').style.display = 'block';
+
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    } catch (err) {
+        loading.innerHTML = `<span style="color:var(--danger);">⚠ Failed to load analysis: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🧠</span> Re-run Analysis';
+    }
+}
+
+function closePanel(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
+
 {% endblock %}

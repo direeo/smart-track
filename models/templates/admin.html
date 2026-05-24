@@ -1,84 +1,81 @@
 {% extends "base.html" %}
-
-{% block title %}Admin Dashboard - SmartTrack{% endblock %}
+{% block title %}Admin Dashboard — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Admin Dashboard</h2>
-    <p>Welcome, <strong>{{ user['full_name'] }}</strong>!</p>
-    
-    <div style="margin: 20px 0;">
-        <a href="/admin/add-department"><button>Add Department</button></a>
-        <a href="/admin/manage-departments"><button class="btn-secondary">Manage Departments</button></a>
-        <a href="/admin/manage-employees"><button class="btn-secondary">Manage Employees</button></a>
+
+{# ── Derive stats from departments list ── #}
+{% set ns = namespace(total_members=0) %}
+{% for dept in departments %}
+    {% set ns.total_members = ns.total_members + dept['member_count'] %}
+{% endfor %}
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Admin Dashboard</h1>
+        <p class="page-header-subtitle">
+            <strong>{{ company['name'] }}</strong>
+            &nbsp;·&nbsp; Company Code:
+            <span class="badge badge-gray" style="font-size:13px; font-family:monospace; letter-spacing:1px; vertical-align:middle; padding:4px 10px;">{{ company['code'] }}</span>
+        </p>
     </div>
-    
-    <h3>Company Overview</h3>
-    <table>
-        <tr>
-            <th>Metric</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Total Employees</td>
-            <td>{{ total_employees }}</td>
-        </tr>
-        <tr>
-            <td>Total Departments</td>
-            <td>{{ total_departments }}</td>
-        </tr>
-        <tr>
-            <td>Total Projects</td>
-            <td>{{ total_projects }}</td>
-        </tr>
-        <tr>
-            <td>Total KPIs</td>
-            <td>{{ total_kpis }}</td>
-        </tr>
-    </table>
-    
-    <h3>Employees</h3>
-    {% if employees %}
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-        {% for emp in employees %}
-        <tr>
-            <td>{{ emp['full_name'] }}</td>
-            <td>{{ emp['department_name'] }}</td>
-            <td>{{ emp['role'] }}</td>
-            <td>Active</td>
-            <td><a href="/admin/employee/{{ emp['id'] }}">View</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No employees yet.</p>
-    {% endif %}
-    
-    <h3>Recent KPI Updates</h3>
-    {% if recent_updates %}
-    <table>
-        <tr>
-            <th>Employee</th>
-            <th>KPI</th>
-            <th>Value</th>
-            <th>Date</th>
-        </tr>
-        {% for update in recent_updates %}
-        <tr>
-            <td>{{ update['employee_name'] }}</td>
-            <td>{{ update['kpi_name'] }}</td>
-            <td>{{ update['value'] }}</td>
-            <td>{{ update['updated_at'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+    <div class="page-header-actions">
+        <a href="/admin/add-department"><button>＋ Add Department</button></a>
+    </div>
 </div>
+
+{# ── Stat cards ── #}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon si-purple">🏢</div>
+        <div>
+            <div class="stat-value">{{ departments | length }}</div>
+            <div class="stat-label">Departments</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-blue">👥</div>
+        <div>
+            <div class="stat-value">{{ ns.total_members }}</div>
+            <div class="stat-label">Total Members</div>
+        </div>
+    </div>
+</div>
+
+{# ── Departments ── #}
+<div class="section-header">
+    <h2 class="section-title"><span class="section-icon">🏢</span> Departments</h2>
+    <a href="/admin/add-department" class="btn btn-sm">＋ Add Department</a>
+</div>
+
+{% if departments %}
+<div class="project-grid">
+    {% for dept in departments %}
+    <a class="project-card" href="/admin/department/{{ dept['id'] }}">
+        <div class="project-card-top">
+            <h3 class="project-card-name">{{ dept['name'] }}</h3>
+            <span class="badge badge-primary">{{ dept['member_count'] }} member{{ 's' if dept['member_count'] != 1 }}</span>
+        </div>
+        <p class="project-card-desc">
+            {% if dept['manager_name'] %}
+            Manager: {{ dept['manager_name'] }}
+            {% else %}
+            No manager assigned yet.
+            {% endif %}
+        </p>
+        <div class="project-card-footer">
+            <span class="project-meta">Click to view members</span>
+            <span class="project-arrow">View →</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">🏢</span>
+    <h4>No departments yet</h4>
+    <p>Add your first department to start organising your company.</p>
+</div>
+{% endif %}
+
 {% endblock %}

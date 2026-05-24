@@ -1,68 +1,186 @@
 {% extends "base.html" %}
-
-{% block title %}Manager Project View - SmartTrack{% endblock %}
+{% block title %}{{ project['name'] }} — SmartTrack{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>{{ project['name'] }}</h2>
-    <p><strong>Description:</strong> {{ project['description'] }}</p>
-    <p><a href="/manager/dashboard">Back to Dashboard</a></p>
-    
-    <div style="margin: 20px 0;">
-        <a href="/manager/project/{{ project['id'] }}/set-kpi"><button>Add KPI</button></a>
-        <a href="/manager/project/{{ project['id'] }}/edit"><button class="btn-secondary">Edit</button></a>
+
+{# ── Page header ── #}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <a href="/manager/dashboard">Dashboard</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ project['name'] }}</span>
+        </div>
+        <h1 class="page-header-title">{{ project['name'] }}</h1>
+        <p class="page-header-subtitle">{{ project['description'] or 'No description provided.' }}</p>
     </div>
-    
-    <h3>Project Team</h3>
-    {% if team_members %}
-    <table>
-        <tr>
-            <th>Member Name</th>
-            <th>Department</th>
-            <th>Role</th>
-            <th>KPIs</th>
-        </tr>
-        {% for member in team_members %}
-        <tr>
-            <td>{{ member['full_name'] }}</td>
-            <td>{{ member['department_name'] }}</td>
-            <td>{{ member['role'] }}</td>
-            <td><a href="/admin/employee/{{ member['id'] }}">View</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No team members assigned.</p>
+    <div class="page-header-actions">
+        <a href="/manager/project/{{ project['id'] }}/set-kpi"><button>＋ Add KPI</button></a>
+        <a href="/manager/dashboard"><button class="btn-secondary">← Back</button></a>
+    </div>
+</div>
+
+{# ── Quick stats ── #}
+{% set ns = namespace(achieved=0) %}
+{% for kpi in kpis %}
+    {% if kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+        {% set ns.achieved = ns.achieved + 1 %}
     {% endif %}
-    
-    <h3>KPIs</h3>
-    {% if kpis %}
-    <table>
-        <tr>
-            <th>KPI Name</th>
-            <th>Target</th>
-            <th>Current</th>
-            <th>Assigned To</th>
-            <th>Status</th>
-        </tr>
-        {% for kpi in kpis %}
-        <tr>
-            <td><a href="/manager/kpi/{{ kpi['id'] }}">{{ kpi['name'] }}</a></td>
-            <td>{{ kpi['target_value'] }}</td>
-            <td>{{ kpi['current_value'] or 'N/A' }}</td>
-            <td>{{ kpi['employee_name'] }}</td>
-            <td>
-                {% if kpi['current_value'] and kpi['current_value'] >= kpi['target_value'] %}
-                <span style="color: #27ae60;">✓ Achieved</span>
+{% endfor %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
+    <div class="stat-card">
+        <div class="stat-icon si-purple">👥</div>
+        <div>
+            <div class="stat-value">{{ members | length }}</div>
+            <div class="stat-label">Team Members</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-navy">📊</div>
+        <div>
+            <div class="stat-value">{{ kpis | length }}</div>
+            <div class="stat-label">Total KPIs</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-green">✅</div>
+        <div>
+            <div class="stat-value">{{ ns.achieved }}</div>
+            <div class="stat-label">Achieved</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-amber">🔄</div>
+        <div>
+            <div class="stat-value">{{ (kpis | length) - ns.achieved }}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+    </div>
+</div>
+
+<div class="two-col">
+
+    {# ── Team Members ── #}
+    <div>
+        <div class="section-header">
+            <h2 class="section-title"><span class="section-icon">👥</span> Team Members</h2>
+        </div>
+
+        {% if members %}
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:9px;">
+                                    <div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:12px; flex-shrink:0;">
+                                        {{ member['full_name'][0] | upper }}
+                                    </div>
+                                    <strong>{{ member['full_name'] }}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-primary' if member['role'] == 'manager' else 'badge-gray' }}">
+                                    {{ member['role'] | title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">👤</span>
+            <h4>No team members</h4>
+            <p>No members have been added to this project.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── KPIs ── #}
+    <div>
+        <div class="section-header">
+            <h2 class="section-title"><span class="section-icon">📊</span> KPIs</h2>
+            <a href="/manager/project/{{ project['id'] }}/set-kpi" class="btn btn-sm">＋ Add KPI</a>
+        </div>
+
+        {% if kpis %}
+        <div class="card">
+            <div class="card-body">
+                {% for kpi in kpis %}
+                {% set current  = kpi['current_value'] if kpi['current_value'] is not none else 0 %}
+                {% set target   = kpi['target_value']  if kpi['target_value'] else 1 %}
+                {% set pct_raw  = (current / target * 100) %}
+                {% set pct      = pct_raw if pct_raw <= 100 else 100 %}
+                {% set achieved = kpi['current_value'] is not none and kpi['current_value'] >= kpi['target_value'] %}
+
+                {# Risk-level left border: CSS class avoids inline Jinja2 style expressions #}
+                {% if achieved %}
+                    {% set risk_cls = 'kpi-risk-ok' %}
+                {% elif pct < 50 %}
+                    {% set risk_cls = 'kpi-risk-danger' %}
+                {% elif pct < 80 %}
+                    {% set risk_cls = 'kpi-risk-warning' %}
                 {% else %}
-                <span style="color: #f39c12;">● In Progress</span>
+                    {% set risk_cls = 'kpi-risk-ok' %}
                 {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No KPIs yet. <a href="/manager/project/{{ project['id'] }}/set-kpi">Add one</a></p>
-    {% endif %}
+
+                <div class="kpi-row {{ risk_cls }}">
+                    <div class="kpi-row-main">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <a class="kpi-row-name" href="/manager/kpi/{{ kpi['id'] }}">{{ kpi['title'] }}</a>
+                            {% if not achieved and pct < 50 %}
+                            <span class="badge badge-danger" style="font-size:11px;">⚠ At Risk</span>
+                            {% elif not achieved and pct < 80 %}
+                            <span class="badge badge-warning" style="font-size:11px;">Needs Attention</span>
+                            {% endif %}
+                        </div>
+                        <div class="kpi-row-sub" style="margin-bottom:5px;">
+                            Assigned to: <strong>{{ kpi['assignee_name'] or 'Unassigned' }}</strong>
+                            &nbsp;·&nbsp; Deadline: {{ kpi['deadline'] or '—' }}
+                        </div>
+                        <div class="progress-meta">
+                            <span>{{ current }} / {{ kpi['target_value'] }} {{ kpi['unit'] }}</span>
+                            <span style="font-weight:600;">{{ pct | int }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill {{ 'pf-success' if achieved else ('pf-warning' if pct >= 50 else 'pf-danger') }}"
+                                 style="width:{{ pct }}%;"></div>
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                        {% if achieved %}
+                        <span class="badge badge-success">✓ Done</span>
+                        {% elif pct < 50 %}
+                        <span class="badge badge-danger">● At Risk</span>
+                        {% else %}
+                        <span class="badge badge-warning">● Active</span>
+                        {% endif %}
+                        <a href="/manager/kpi/{{ kpi['id'] }}" style="font-size:12px; color:var(--primary);">View →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">📊</span>
+            <h4>No KPIs yet</h4>
+            <p><a href="/manager/project/{{ project['id'] }}/set-kpi">Add the first KPI</a> to this project.</p>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}

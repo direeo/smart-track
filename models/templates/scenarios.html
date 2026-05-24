@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% block title %}Usability Test Scenarios — SmartTrack{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Usability Test Scenarios</h1>
+        <p class="page-header-subtitle">
+            Five persona-based scenarios for the SmartTrack KPI system evaluation.
+            Each participant receives one scenario card.
+        </p>
+    </div>
+    {% if user %}
+    <div class="page-header-actions">
+        <a href="/{{ user['role'] }}/dashboard"><button class="btn-secondary">← Back to Dashboard</button></a>
+    </div>
+    {% else %}
+    <div class="page-header-actions">
+        <a href="/login"><button class="btn-secondary">← Sign In</button></a>
+    </div>
+    {% endif %}
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# Scenario A #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div class="scenario-card scenario-a">
+    <div class="scenario-header">
+        <div class="scenario-letter">A</div>
+        <div>
+            <div class="scenario-label">Employee — On Track</div>
+            <h2 class="scenario-name">Esther Ojo</h2>
+        </div>
+        <div class="scenario-company-tag">Nexus Technologies Ltd</div>
+    </div>
+
+    <div class="scenario-body">
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Role</div>
+            <p>You are <strong>Esther Ojo</strong>, a software engineer at Nexus Technologies Ltd.
+               You are assigned to the <em>Q2 Platform Sprint</em> project and are well ahead of
+               your code-review KPI target.</p>
+        </div>
+
+        <div class="scenario-login">
+            <div class="scenario-login-row">
+                <span class="login-label">Username</span>
+                <code class="login-val">nex_star</code>
+            </div>
+            <div class="scenario-login-row">
+                <span class="login-label">Password</span>
+                <code class="login-val">emp123</code>
+            </div>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Situation</div>
+            <p>You've been consistently ahead of schedule all sprint. You want to check how you
+               are doing, run the AI forecast to see if you'll finish early, and log your latest
+               progress update before your stand-up call.</p>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Tasks</div>
+            <ol class="scenario-tasks">
+                <li>Log in and go to your dashboard. How many projects are you on?</li>
+                <li>Open the <em>Q2 Platform Sprint</em> project and find your <em>Complete code reviews</em> KPI.</li>
+                <li>Click <strong>Run KPI Forecast</strong> — what does the system predict you will achieve?</li>
+                <li>Click <strong>Behaviour Analysis</strong> — what is your risk level and recommended action?</li>
+                <li>Log a new progress update: value <strong>58</strong>, note <em>"Two more reviews done — almost finished."</em></li>
+                <li>Does the dashboard update to show your new value?</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# Scenario B #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div class="scenario-card scenario-b">
+    <div class="scenario-header">
+        <div class="scenario-letter">B</div>
+        <div>
+            <div class="scenario-label">Employee — At Risk</div>
+            <h2 class="scenario-name">Ngozi Ihejirika</h2>
+        </div>
+        <div class="scenario-company-tag">Nexus Technologies Ltd</div>
+    </div>
+
+    <div class="scenario-body">
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Role</div>
+            <p>You are <strong>Ngozi Ihejirika</strong>, a backend engineer at Nexus Technologies Ltd.
+               You are assigned to the <em>Q2 Platform Sprint</em> project and have been struggling
+               to clear your bug-ticket backlog.</p>
+        </div>
+
+        <div class="scenario-login">
+            <div class="scenario-login-row">
+                <span class="login-label">Username</span>
+                <code class="login-val">nex_risk</code>
+            </div>
+            <div class="scenario-login-row">
+                <span class="login-label">Password</span>
+                <code class="login-val">emp123</code>
+            </div>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Situation</div>
+            <p>Your progress has been slow — you've only resolved 25 of the 80 bugs required by the
+               end of the sprint. You need to understand exactly how at-risk you are and what your
+               options are before your next manager check-in.</p>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Tasks</div>
+            <ol class="scenario-tasks">
+                <li>Log in and navigate to the <em>Resolve bug tickets</em> KPI in <em>Q2 Platform Sprint</em>.</li>
+                <li>How much progress have you made so far? What does the progress bar show?</li>
+                <li>Click <strong>Behaviour Analysis</strong> — what is your risk level?</li>
+                <li>Read the <strong>three recommended actions</strong>. Which option would you choose?</li>
+                <li>Click <strong>Run KPI Forecast</strong> — does the system think you will meet the deadline?</li>
+                <li>Log an update: value <strong>28</strong>, note <em>"Cleared 3 more this week."</em></li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# Scenario C #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div class="scenario-card scenario-c">
+    <div class="scenario-header">
+        <div class="scenario-letter">C</div>
+        <div>
+            <div class="scenario-label">Employee — Deadline Passed</div>
+            <h2 class="scenario-name">Bola Adeleke</h2>
+        </div>
+        <div class="scenario-company-tag">Nexus Technologies Ltd</div>
+    </div>
+
+    <div class="scenario-body">
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Role</div>
+            <p>You are <strong>Bola Adeleke</strong>, a technical writer at Nexus Technologies Ltd.
+               Your <em>Q1 Documentation Sprint</em> project ended last week and the final KPI
+               deadline has already passed.</p>
+        </div>
+
+        <div class="scenario-login">
+            <div class="scenario-login-row">
+                <span class="login-label">Username</span>
+                <code class="login-val">nex_done</code>
+            </div>
+            <div class="scenario-login-row">
+                <span class="login-label">Password</span>
+                <code class="login-val">emp123</code>
+            </div>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Situation</div>
+            <p>The project is marked as completed but you only finished 28 of the 40 documentation
+               pages required. The deadline passed 6 days ago. You want to see the final picture
+               and understand what the system says about your performance.</p>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Tasks</div>
+            <ol class="scenario-tasks">
+                <li>Log in and open the <em>Q1 Documentation Sprint</em> project.</li>
+                <li>Find the <em>Write technical documentation</em> KPI. What is the current status?</li>
+                <li>Click <strong>Behaviour Analysis</strong> — what does the system say about the missed deadline?</li>
+                <li>Click <strong>Run KPI Forecast</strong> — what does the forecast show for a completed KPI?</li>
+                <li>Review the update history — how many updates were logged and when?</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# Scenario D #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div class="scenario-card scenario-d">
+    <div class="scenario-header">
+        <div class="scenario-letter">D</div>
+        <div>
+            <div class="scenario-label">Manager</div>
+            <h2 class="scenario-name">Tunde Bakare</h2>
+        </div>
+        <div class="scenario-company-tag">Nexus Technologies · Engineering</div>
+    </div>
+
+    <div class="scenario-body">
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Role</div>
+            <p>You are <strong>Tunde Bakare</strong>, Engineering Manager at Nexus Technologies Ltd.
+               You manage the <em>Q2 Platform Sprint</em> project and are responsible for your
+               team's KPI delivery.</p>
+        </div>
+
+        <div class="scenario-login">
+            <div class="scenario-login-row">
+                <span class="login-label">Username</span>
+                <code class="login-val">nex_mgr_e</code>
+            </div>
+            <div class="scenario-login-row">
+                <span class="login-label">Password</span>
+                <code class="login-val">mgr123</code>
+            </div>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Situation</div>
+            <p>It's mid-sprint and you want to check how each team member is progressing, identify
+               who is at risk, run an AI analysis on the most concerning KPI, and then create a
+               new KPI for an upcoming deliverable.</p>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Tasks</div>
+            <ol class="scenario-tasks">
+                <li>Log in and go to your manager dashboard. How many projects do you manage?</li>
+                <li>Open <em>Q2 Platform Sprint</em> — which team member looks <strong>most at risk</strong> just from the project view?</li>
+                <li>Click into <strong>Ngozi's</strong> <em>Resolve bug tickets</em> KPI. Run <strong>Behaviour Analysis</strong> on it.</li>
+                <li>Run the <strong>KPI Forecast</strong> — does the AI agree with your own assessment?</li>
+                <li>Create a new KPI: assign it to <strong>Femi Lawal</strong>, title <em>"Complete security review"</em>, target <em>10 reviews</em>, deadline <em>end of next month</em>.</li>
+                <li>Confirm the new KPI appears on the project page.</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════════ #}
+{# Scenario E #}
+{# ══════════════════════════════════════════════════════════════ #}
+<div class="scenario-card scenario-e">
+    <div class="scenario-header">
+        <div class="scenario-letter">E</div>
+        <div>
+            <div class="scenario-label">Administrator</div>
+            <h2 class="scenario-name">Sarah Okonkwo</h2>
+        </div>
+        <div class="scenario-company-tag">Nexus Technologies Ltd</div>
+    </div>
+
+    <div class="scenario-body">
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Role</div>
+            <p>You are <strong>Sarah Okonkwo</strong>, Company Administrator at Nexus Technologies Ltd.
+               You oversee the whole organisation, manage user roles, and monitor overall
+               performance.</p>
+        </div>
+
+        <div class="scenario-login">
+            <div class="scenario-login-row">
+                <span class="login-label">Username</span>
+                <code class="login-val">nex_admin</code>
+            </div>
+            <div class="scenario-login-row">
+                <span class="login-label">Password</span>
+                <code class="login-val">admin123</code>
+            </div>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Situation</div>
+            <p>A new team member has joined Engineering and you need to promote an existing employee
+               to manager. You also want to check on overall KPI progress and add a new department
+               for a growing business unit.</p>
+        </div>
+
+        <div class="scenario-section">
+            <div class="scenario-section-title">Your Tasks</div>
+            <ol class="scenario-tasks">
+                <li>Log in and go to the Admin Dashboard. How many departments does Nexus Technologies have?</li>
+                <li>Find the <strong>Engineering</strong> department and click into it.</li>
+                <li>Open <strong>Ngozi Ihejirika's</strong> profile — as admin, can you see her KPI progress without being her manager?</li>
+                <li>Go back and open <strong>Femi Lawal's</strong> profile. Use the <strong>Change Role</strong> form to promote him from <em>Employee</em> to <em>Manager</em>.</li>
+                <li>Return to the Admin Dashboard — find the <strong>Company Code</strong>. Where would you share this with a new employee joining the company?</li>
+                <li>Add a new department called <strong>Customer Success</strong>.</li>
+                <li>Look at the overall dashboard — does it give you a clear picture of the organisation?</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{# ── Print hint ── #}
+<div class="info-box" style="margin-top:32px; display:flex; align-items:center; gap:14px;">
+    <span style="font-size:22px;">🖨️</span>
+    <span>Print this page or share the link <strong>/scenarios</strong> with test participants.
+    Each scenario card is designed to be read independently.</span>
+</div>
+
+<style>
+/* ── Scenario cards ── */
+.scenario-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    margin-bottom: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    animation: fadeIn 0.3s ease;
+}
+
+.scenario-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+}
+
+.scenario-a .scenario-header { background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+.scenario-b .scenario-header { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.scenario-c .scenario-header { background: linear-gradient(135deg, #fef2f2, #fecaca); }
+.scenario-d .scenario-header { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
+.scenario-e .scenario-header { background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
+
+.scenario-letter {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 900;
+    color: white;
+    flex-shrink: 0;
+}
+
+.scenario-a .scenario-letter { background: linear-gradient(135deg, #10b981, #059669); }
+.scenario-b .scenario-letter { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.scenario-c .scenario-letter { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.scenario-d .scenario-letter { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.scenario-e .scenario-letter { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+.scenario-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.scenario-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.scenario-company-tag {
+    margin-left: auto;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.scenario-body {
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 220px 1fr 2fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.scenario-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.scenario-section p {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.65;
+    margin: 0;
+}
+
+.scenario-login {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.scenario-login-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.login-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--text-secondary);
+}
+
+code.login-val {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 1px;
+    background: none;
+    padding: 0;
+}
+
+.scenario-tasks {
+    padding-left: 18px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scenario-tasks li {
+    font-size: 13.5px;
+    color: var(--text-primary);
+    line-height: 1.55;
+}
+
+.scenario-tasks strong { color: var(--primary); }
+.scenario-tasks em { color: var(--text-secondary); font-style: normal; font-weight: 600; }
+
+/* ── Responsive collapse ── */
+@media (max-width: 900px) {
+    .scenario-body {
+        grid-template-columns: 1fr;
+    }
+    .scenario-company-tag { display: none; }
+}
+
+@media print {
+    .navbar, .page-header-actions, .info-box { display: none !important; }
+    .scenario-card { break-inside: avoid; margin-bottom: 16px; }
+    body { background: white !important; }
+}
+</style>
+
+{% endblock %}

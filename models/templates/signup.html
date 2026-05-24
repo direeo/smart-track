@@ -1,64 +1,103 @@
 {% extends "base.html" %}
-
-{% block title %}Signup - SmartTrack{% endblock %}
+{% block title %}Join Company — SmartTrack{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 
 {% block content %}
 <div class="auth-frame">
+
+    {# ── Left panel ── #}
     <div class="auth-side auth-side-left">
         <div class="auth-side-content">
-            <h1 class="hero-title">Smarter solutions for a better tomorrow</h1>
-            <p class="hero-copy">Join your company workspace with a secure onboarding flow, so you can start tracking KPIs and collaborating quickly.</p>
+            <div style="margin-bottom:32px;">
+                <div style="display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,0.12); padding:8px 16px; border-radius:999px; margin-bottom:24px;">
+                    <span style="font-size:18px;">🏢</span>
+                    <span style="font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.9;">SmartTrack</span>
+                </div>
+                <h1 class="hero-title">Join your team workspace</h1>
+                <p style="color:rgba(255,255,255,0.8); font-size:15px; line-height:1.7; max-width:360px; margin-top:16px;">
+                    Enter your company code and create a personal account to start tracking KPIs and collaborating with your team.
+                </p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px; max-width:320px;">
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">🔑</span> Ask your admin for the company code
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">📊</span> Track your KPIs and log progress
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; color:rgba(255,255,255,0.85); font-size:14px;">
+                    <span style="font-size:20px;">🤖</span> Get AI-powered forecasts and insights
+                </div>
+            </div>
         </div>
     </div>
+
+    {# ── Right panel ── #}
     <div class="auth-side auth-side-right">
-        <div class="auth-card compact-card">
+        <div class="auth-card compact-card" style="width:100%; max-width:420px; margin:auto;">
+
             <div class="auth-header">
                 <span class="brand-tag">Join Company</span>
-                <h2>Create your employee account</h2>
-                <p class="auth-copy">Enter your company code and join the team with your personal login.</p>
+                <h2 style="font-size:24px; margin:12px 0 6px;">Create your employee account</h2>
+                <p class="auth-copy">Enter your company code, then fill in your details.</p>
             </div>
 
             {% if error %}
-            <div class="error">{{ error }}</div>
+            <div class="error" style="margin-bottom:16px;">{{ error }}</div>
             {% endif %}
 
-            <form method="post" action="/signup">
-                <div class="form-group">
-                    <label for="company_code">Company Code</label>
-                    <input type="text" id="company_code" name="company_code" placeholder="Ask your admin for the code" required onchange="loadDepartments()">
-                    <small>Enter the code provided by your company admin.</small>
-                    <div id="company_info" class="info-box"></div>
+            <form method="post" action="/signup" id="signup-form">
+
+                {# Company code + live department load #}
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label for="company_code" style="font-size:13px;">Company Code</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="company_code" name="company_code"
+                               placeholder="e.g. NEXUS1" required
+                               style="text-transform:uppercase; letter-spacing:2px; font-weight:600; flex:1;">
+                        <button type="button" onclick="loadDepartments()"
+                                style="padding:0 16px; white-space:nowrap; font-size:13px; height:42px; border-radius:8px; background:var(--primary); color:white; border:none; cursor:pointer; font-weight:600;">
+                            Look up
+                        </button>
+                    </div>
+                    <div id="company_info" style="margin-top:6px; font-size:13px; color:var(--success); font-weight:600;"></div>
                 </div>
-                <div class="form-group">
-                    <label for="department_id">Department</label>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label for="department_id" style="font-size:13px;">Department</label>
                     <select id="department_id" name="department_id" required>
-                        <option value="">Select a department</option>
+                        <option value="">Select department after entering code</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="full_name">Full Name</label>
-                    <input type="text" id="full_name" name="full_name" required>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label for="full_name" style="font-size:13px;">Full Name</label>
+                        <input type="text" id="full_name" name="full_name"
+                               placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label for="username" style="font-size:13px;">Username</label>
+                        <input type="text" id="username" name="username"
+                               placeholder="Choose a username" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group password-field">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                    <div class="show-password">
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label for="password" style="font-size:13px;">Password</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="Create a password" required>
+                    <div class="show-password" style="margin-top:6px;">
                         <label><input type="checkbox" onchange="togglePasswordVisibility('password', this)"> Show password</label>
                     </div>
                 </div>
-                <div class="form-actions">
-                    <input type="submit" value="Join Company" class="btn-primary" style="width: 100%;">
-                </div>
+
+                <input type="submit" value="Create Account" class="btn-primary" style="width:100%; padding:13px;">
             </form>
 
-            <div class="auth-actions" style="justify-content: flex-start;">
-                <a href="/register" class="btn btn-secondary">Create new company</a>
-                <a href="/login" class="btn btn-outline">Login</a>
+            <div class="auth-actions" style="margin-top:16px; justify-content:space-between;">
+                <a href="/login" class="btn btn-secondary" style="font-size:13px;">Sign in instead</a>
+                <a href="/register" class="btn btn-outline" style="font-size:13px;">Create company</a>
             </div>
         </div>
     </div>
@@ -66,26 +105,36 @@
 
 <script>
 function loadDepartments() {
-    const code = document.getElementById('company_code').value.toUpperCase();
-    const url = `/api/company-departments?code=${code}`;
-    fetch(url)
+    const code = document.getElementById('company_code').value.toUpperCase().trim();
+    if (!code) { return; }
+    const infoEl = document.getElementById('company_info');
+    const deptEl = document.getElementById('department_id');
+    infoEl.textContent = 'Looking up...';
+    infoEl.style.color = 'var(--text-secondary)';
+    fetch('/api/company-departments?code=' + code)
         .then(r => r.json())
         .then(data => {
             if (data.error) {
-                document.getElementById('company_info').innerHTML = '<div class="error">' + data.error + '</div>';
-                document.getElementById('department_id').innerHTML = '<option value="">Select a department</option>';
+                infoEl.textContent = 'Code not found. Check with your admin.';
+                infoEl.style.color = 'var(--danger)';
+                deptEl.innerHTML = '<option value="">Select department after entering code</option>';
             } else {
-                document.getElementById('company_info').innerHTML = '<div class="info-box"><strong>Company:</strong> ' + data.company_name + '</div>';
-                let deptHTML = '<option value="">Select a department</option>';
+                infoEl.textContent = 'Company: ' + data.company_name;
+                infoEl.style.color = 'var(--success)';
+                let html = '<option value="">Select your department</option>';
                 data.departments.forEach(d => {
-                    deptHTML += `<option value="${d.id}">${d.name}</option>`;
+                    html += '<option value="' + d.id + '">' + d.name + '</option>';
                 });
-                document.getElementById('department_id').innerHTML = deptHTML;
+                deptEl.innerHTML = html;
             }
         })
         .catch(() => {
-            document.getElementById('company_info').innerHTML = '<div class="error">Error loading company</div>';
+            infoEl.textContent = 'Error connecting. Try again.';
+            infoEl.style.color = 'var(--danger)';
         });
 }
+document.getElementById('company_code').addEventListener('blur', function() {
+    if (this.value.trim()) { loadDepartments(); }
+});
 </script>
 {% endblock %}
