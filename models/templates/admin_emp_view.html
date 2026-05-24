@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{# ── KPI stats ── #}
+{#  KPI stats  #}
 {% set ns = namespace(achieved=0, total=0) %}
 {% for kpi in kpis %}
     {% set ns.total = ns.total + 1 %}
@@ -13,7 +13,7 @@
 {% endfor %}
 {% set perf_pct = ((ns.achieved / ns.total * 100) | int) if ns.total > 0 else 0 %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <div class="breadcrumb">
@@ -29,27 +29,27 @@
             </span>
         </p>
     </div>
-    <a href="/admin/dashboard"><button class="btn-secondary">← Back</button></a>
+    <a href="/admin/dashboard"><button class="btn-secondary">Back</button></a>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
     <div class="stat-card">
-        <div class="stat-icon si-navy">📊</div>
+        <div class="stat-icon si-navy"></div>
         <div>
             <div class="stat-value">{{ ns.total }}</div>
             <div class="stat-label">Total KPIs</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-green">✅</div>
+        <div class="stat-icon si-green"></div>
         <div>
             <div class="stat-value">{{ ns.achieved }}</div>
             <div class="stat-label">Achieved</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-amber">🔄</div>
+        <div class="stat-icon si-amber"></div>
         <div>
             <div class="stat-value">{{ ns.total - ns.achieved }}</div>
             <div class="stat-label">In Progress</div>
@@ -57,7 +57,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-icon {{ 'si-green' if perf_pct >= 80 else ('si-amber' if perf_pct >= 60 else 'si-red') }}">
-            {% if perf_pct >= 80 %}🏆{% elif perf_pct >= 60 %}📈{% else %}⚠️{% endif %}
+            {% if perf_pct >= 80 %}{% elif perf_pct >= 60 %}{% else %}{% endif %}
         </div>
         <div>
             <div class="stat-value">{{ perf_pct }}%</div>
@@ -67,10 +67,10 @@
 </div>
 
 <div class="two-col">
-    {# ── Profile details ── #}
+    {#  Profile details  #}
     <div>
         <div class="section-header">
-            <h2 class="section-title"><span class="section-icon">👤</span> Profile</h2>
+            <h2 class="section-title"><span class="section-icon"></span> Profile</h2>
         </div>
         <div class="card">
             <div class="card-body">
@@ -102,7 +102,7 @@
                 </div>
             </div>
 
-            {# ── Role promotion form ── #}
+            {#  Role promotion form  #}
             <div class="card-footer" style="padding:14px 20px; border-top:1px solid var(--border); background:#f8fafc;">
                 <form method="post" action="/admin/change-role"
                       style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"
@@ -123,10 +123,10 @@
         </div>
     </div>
 
-    {# ── KPI Performance ── #}
+    {#  KPI Performance  #}
     <div>
         <div class="section-header">
-            <h2 class="section-title"><span class="section-icon">📊</span> KPI Performance</h2>
+            <h2 class="section-title"><span class="section-icon"></span> KPI Performance</h2>
         </div>
         {% if kpis %}
         <div class="card">
@@ -154,9 +154,9 @@
                     </div>
                     <div style="flex-shrink:0;">
                         {% if achieved %}
-                        <span class="badge badge-success">✓</span>
+                        <span class="badge badge-success"></span>
                         {% else %}
-                        <span class="badge badge-warning">●</span>
+                        <span class="badge badge-warning"></span>
                         {% endif %}
                     </div>
                 </div>
@@ -165,7 +165,7 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <span class="empty-icon">📊</span>
+            <span class="empty-icon"></span>
             <h4>No KPIs assigned</h4>
             <p>This employee has not been assigned any KPIs yet.</p>
         </div>

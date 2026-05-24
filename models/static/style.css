@@ -34,9 +34,9 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══════════════════════════════════════════
+/* 
    NAVBAR
-═══════════════════════════════════════════ */
+ */
 .navbar {
     background: var(--navbar-bg);
     display: flex;
@@ -174,9 +174,9 @@ body {
     text-decoration: none !important;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    LAYOUT
-═══════════════════════════════════════════ */
+ */
 main {
     max-width: 1280px;
     margin: 32px auto;
@@ -193,9 +193,9 @@ footer {
     font-size: 13px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    PAGE HEADER
-═══════════════════════════════════════════ */
+ */
 .page-header {
     display: flex;
     align-items: flex-start;
@@ -241,9 +241,9 @@ footer {
 .breadcrumb a:hover { text-decoration: underline; }
 .breadcrumb-sep { color: #cbd5e1; font-size: 11px; }
 
-/* ═══════════════════════════════════════════
+/* 
    STAT CARDS
-═══════════════════════════════════════════ */
+ */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -303,9 +303,9 @@ footer {
     letter-spacing: 0.4px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    CARDS
-═══════════════════════════════════════════ */
+ */
 .card {
     background: white;
     border: 1px solid var(--border);
@@ -344,9 +344,9 @@ footer {
     background: var(--light-bg);
 }
 
-/* ═══════════════════════════════════════════
+/* 
    PROJECT GRID
-═══════════════════════════════════════════ */
+ */
 .project-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -426,9 +426,9 @@ footer {
     gap: 3px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    PROGRESS BARS
-═══════════════════════════════════════════ */
+ */
 .progress-meta {
     display: flex;
     justify-content: space-between;
@@ -455,9 +455,9 @@ footer {
 .pf-warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .pf-danger  { background: linear-gradient(90deg, #ef4444, #f87171); }
 
-/* ═══════════════════════════════════════════
+/* 
    BADGES
-═══════════════════════════════════════════ */
+ */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -478,9 +478,9 @@ footer {
 .badge-gray    { background: rgba(100,116,139,0.1); color: #475569; }
 .badge-purple  { background: rgba(139,92,246,0.1);  color: #7c3aed; }
 
-/* ═══════════════════════════════════════════
+/* 
    KPI LIST ROWS
-═══════════════════════════════════════════ */
+ */
 .kpi-row {
     display: flex;
     align-items: center;
@@ -516,9 +516,9 @@ footer {
 
 .kpi-row-right { flex-shrink: 0; text-align: right; }
 
-/* ═══════════════════════════════════════════
+/* 
    EMPTY STATES
-═══════════════════════════════════════════ */
+ */
 .empty-state {
     text-align: center;
     padding: 44px 24px;
@@ -542,9 +542,9 @@ footer {
     margin: 0;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    SECTION HEADERS
-═══════════════════════════════════════════ */
+ */
 .section-header {
     display: flex;
     align-items: center;
@@ -568,9 +568,9 @@ footer {
     line-height: 1;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    ACTION ROW
-═══════════════════════════════════════════ */
+ */
 .action-row {
     display: flex;
     gap: 10px;
@@ -578,9 +578,9 @@ footer {
     margin-bottom: 24px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    DETAIL LIST (key/value pairs)
-═══════════════════════════════════════════ */
+ */
 .detail-list { width: 100%; }
 
 .detail-item {
@@ -609,9 +609,9 @@ footer {
     font-weight: 500;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    PERFORMANCE SCORE
-═══════════════════════════════════════════ */
+ */
 .perf-score {
     font-size: 20px;
     font-weight: 800;
@@ -622,9 +622,9 @@ footer {
 .perf-good      { color: #d97706; }
 .perf-poor      { color: #dc2626; }
 
-/* ═══════════════════════════════════════════
+/* 
    BUTTONS
-═══════════════════════════════════════════ */
+ */
 button,
 .btn,
 input[type="submit"] {
@@ -690,9 +690,9 @@ input[type="submit"]:active {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* ═══════════════════════════════════════════
+/* 
    AI ANALYSIS PANELS
-═══════════════════════════════════════════ */
+ */
 .btn-ai {
     display: inline-flex;
     align-items: center;
@@ -881,9 +881,9 @@ input[type="submit"]:active {
     box-shadow: 0 5px 16px rgba(16,185,129,0.4);
 }
 
-/* ═══════════════════════════════════════════
+/* 
    FORMS
-═══════════════════════════════════════════ */
+ */
 .form-card {
     max-width: 640px;
     margin: 0 auto;
@@ -968,9 +968,9 @@ small {
     flex-wrap: wrap;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    TABLES
-═══════════════════════════════════════════ */
+ */
 .table-wrap {
     overflow-x: auto;
     border-radius: 10px;
@@ -1020,9 +1020,9 @@ tr:last-child td { border-bottom: none; }
 tbody tr { transition: background 0.15s; }
 tbody tr:hover { background: #f8fafc; }
 
-/* ═══════════════════════════════════════════
+/* 
    MESSAGES
-═══════════════════════════════════════════ */
+ */
 .error {
     color: #991b1b;
     padding: 14px 18px;
@@ -1037,7 +1037,7 @@ tbody tr:hover { background: #f8fafc; }
     gap: 10px;
 }
 
-.error::before { content: "✕"; font-weight: 700; }
+.error::before { content: ""; font-weight: 700; }
 
 .success {
     color: #166534;
@@ -1053,7 +1053,7 @@ tbody tr:hover { background: #f8fafc; }
     gap: 10px;
 }
 
-.success::before { content: "✓"; font-weight: 700; }
+.success::before { content: ""; font-weight: 700; }
 
 .warning {
     color: #92400e;
@@ -1069,11 +1069,11 @@ tbody tr:hover { background: #f8fafc; }
     gap: 10px;
 }
 
-.warning::before { content: "⚠"; }
+.warning::before { content: ""; }
 
-/* ═══════════════════════════════════════════
+/* 
    INFO BOX
-═══════════════════════════════════════════ */
+ */
 .info-box {
     padding: 16px 20px;
     border-radius: 10px;
@@ -1084,18 +1084,18 @@ tbody tr:hover { background: #f8fafc; }
     margin: 12px 0;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    TWO-COL
-═══════════════════════════════════════════ */
+ */
 .two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    AUTH PAGES (login / register / signup)
-═══════════════════════════════════════════ */
+ */
 body.auth-page {
     background: none;
     overflow: hidden;   /* keep it; the right panel scrolls internally */
@@ -1334,9 +1334,9 @@ input[type="submit"].btn-primary:hover {
     letter-spacing: 1px;
 }
 
-/* ═══════════════════════════════════════════
+/* 
    RESPONSIVE
-═══════════════════════════════════════════ */
+ */
 @media (max-width: 1000px) {
     .auth-frame {
         grid-template-columns: 1fr;

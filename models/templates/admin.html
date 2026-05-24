@@ -3,13 +3,13 @@
 
 {% block content %}
 
-{# ── Derive stats from departments list ── #}
+{#  Derive stats from departments list  #}
 {% set ns = namespace(total_members=0) %}
 {% for dept in departments %}
     {% set ns.total_members = ns.total_members + dept['member_count'] %}
 {% endfor %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <h1 class="page-header-title">Admin Dashboard</h1>
@@ -20,21 +20,21 @@
         </p>
     </div>
     <div class="page-header-actions">
-        <a href="/admin/add-department"><button>＋ Add Department</button></a>
+        <a href="/admin/add-department"><button>+ Add Department</button></a>
     </div>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon si-purple">🏢</div>
+        <div class="stat-icon si-purple"></div>
         <div>
             <div class="stat-value">{{ departments | length }}</div>
             <div class="stat-label">Departments</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-blue">👥</div>
+        <div class="stat-icon si-blue"></div>
         <div>
             <div class="stat-value">{{ ns.total_members }}</div>
             <div class="stat-label">Total Members</div>
@@ -42,10 +42,10 @@
     </div>
 </div>
 
-{# ── Departments ── #}
+{#  Departments  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">🏢</span> Departments</h2>
-    <a href="/admin/add-department" class="btn btn-sm">＋ Add Department</a>
+    <h2 class="section-title"><span class="section-icon"></span> Departments</h2>
+    <a href="/admin/add-department" class="btn btn-sm">+ Add Department</a>
 </div>
 
 {% if departments %}
@@ -65,14 +65,14 @@
         </p>
         <div class="project-card-footer">
             <span class="project-meta">Click to view members</span>
-            <span class="project-arrow">View →</span>
+            <span class="project-arrow">View </span>
         </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">🏢</span>
+    <span class="empty-icon"></span>
     <h4>No departments yet</h4>
     <p>Add your first department to start organising your company.</p>
 </div>

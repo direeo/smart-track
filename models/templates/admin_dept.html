@@ -3,14 +3,14 @@
 
 {% block content %}
 
-{# ── Stats from members ── #}
+{#  Stats from members  #}
 {% set ns = namespace(managers=0, employees=0) %}
 {% for m in members %}
     {% if m['role'] == 'manager' %}{% set ns.managers = ns.managers + 1 %}{% endif %}
     {% if m['role'] == 'employee' %}{% set ns.employees = ns.employees + 1 %}{% endif %}
 {% endfor %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <div class="breadcrumb">
@@ -22,30 +22,30 @@
         <p class="page-header-subtitle">Department overview and member list.</p>
     </div>
     <div class="page-header-actions">
-        <a href="/admin/add-department"><button class="btn-secondary">＋ Add Department</button></a>
-        <a href="/admin/dashboard"><button class="btn-secondary">← Back</button></a>
+        <a href="/admin/add-department"><button class="btn-secondary">+ Add Department</button></a>
+        <a href="/admin/dashboard"><button class="btn-secondary">Back</button></a>
     </div>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
     <div class="stat-card">
-        <div class="stat-icon si-blue">👤</div>
+        <div class="stat-icon si-blue"></div>
         <div>
             <div class="stat-value">{{ members | length }}</div>
             <div class="stat-label">Total Members</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-primary">🏅</div>
+        <div class="stat-icon si-primary"></div>
         <div>
-            <div class="stat-icon si-purple">🏅</div>
+            <div class="stat-icon si-purple"></div>
             <div class="stat-value">{{ ns.managers }}</div>
             <div class="stat-label">Managers</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-navy">👥</div>
+        <div class="stat-icon si-navy"></div>
         <div>
             <div class="stat-value">{{ ns.employees }}</div>
             <div class="stat-label">Employees</div>
@@ -53,9 +53,9 @@
     </div>
 </div>
 
-{# ── Members table ── #}
+{#  Members table  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">👥</span> Department Members</h2>
+    <h2 class="section-title"><span class="section-icon"></span> Department Members</h2>
 </div>
 
 {% if members %}
@@ -102,7 +102,7 @@
 </div>
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">👤</span>
+    <span class="empty-icon"></span>
     <h4>No members yet</h4>
     <p>Employees and managers who join this department will appear here.</p>
 </div>

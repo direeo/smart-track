@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <div class="breadcrumb">
@@ -14,10 +14,10 @@
         <h1 class="page-header-title">{{ project['name'] }}</h1>
         <p class="page-header-subtitle">{{ project['description'] or 'No description provided.' }}</p>
     </div>
-    <a href="/employee/dashboard"><button class="btn-secondary">← Back</button></a>
+    <a href="/employee/dashboard"><button class="btn-secondary">Back</button></a>
 </div>
 
-{# ── KPI count stats ── #}
+{#  KPI count stats  #}
 {% set ns = namespace(achieved=0, total=0) %}
 {% for kpi in kpis %}
     {% set ns.total = ns.total + 1 %}
@@ -29,21 +29,21 @@
 {% if kpis %}
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom:28px;">
     <div class="stat-card">
-        <div class="stat-icon si-navy">📊</div>
+        <div class="stat-icon si-navy"></div>
         <div>
             <div class="stat-value">{{ ns.total }}</div>
             <div class="stat-label">My KPIs</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-green">✅</div>
+        <div class="stat-icon si-green"></div>
         <div>
             <div class="stat-value">{{ ns.achieved }}</div>
             <div class="stat-label">Achieved</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-amber">🔄</div>
+        <div class="stat-icon si-amber"></div>
         <div>
             <div class="stat-value">{{ ns.total - ns.achieved }}</div>
             <div class="stat-label">In Progress</div>
@@ -52,7 +52,7 @@
 </div>
 
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">📊</span> Project KPIs</h2>
+    <h2 class="section-title"><span class="section-icon"></span> Project KPIs</h2>
 </div>
 
 <div class="card">
@@ -81,9 +81,9 @@
             </div>
             <div class="kpi-row-right" style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
                 {% if achieved %}
-                <span class="badge badge-success">✓ Achieved</span>
+                <span class="badge badge-success">Achieved</span>
                 {% else %}
-                <span class="badge badge-warning">● In Progress</span>
+                <span class="badge badge-warning">In Progress</span>
                 {% endif %}
                 <a href="/employee/kpi/{{ kpi['id'] }}" class="btn btn-sm">Update</a>
             </div>
@@ -94,7 +94,7 @@
 
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">📊</span>
+    <span class="empty-icon"></span>
     <h4>No KPIs assigned</h4>
     <p>Your manager hasn't assigned any KPIs to you in this project yet.</p>
 </div>

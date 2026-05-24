@@ -13,18 +13,18 @@
     </div>
     {% if user %}
     <div class="page-header-actions">
-        <a href="/{{ user['role'] }}/dashboard"><button class="btn-secondary">← Back to Dashboard</button></a>
+        <a href="/{{ user['role'] }}/dashboard"><button class="btn-secondary">Back to Dashboard</button></a>
     </div>
     {% else %}
     <div class="page-header-actions">
-        <a href="/login"><button class="btn-secondary">← Sign In</button></a>
+        <a href="/login"><button class="btn-secondary">Sign In</button></a>
     </div>
     {% endif %}
 </div>
 
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 {# Scenario A #}
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 <div class="scenario-card scenario-a">
     <div class="scenario-header">
         <div class="scenario-letter">A</div>
@@ -75,9 +75,9 @@
     </div>
 </div>
 
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 {# Scenario B #}
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 <div class="scenario-card scenario-b">
     <div class="scenario-header">
         <div class="scenario-letter">B</div>
@@ -128,9 +128,9 @@
     </div>
 </div>
 
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 {# Scenario C #}
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 <div class="scenario-card scenario-c">
     <div class="scenario-header">
         <div class="scenario-letter">C</div>
@@ -180,9 +180,9 @@
     </div>
 </div>
 
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 {# Scenario D #}
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 <div class="scenario-card scenario-d">
     <div class="scenario-header">
         <div class="scenario-letter">D</div>
@@ -233,9 +233,9 @@
     </div>
 </div>
 
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 {# Scenario E #}
-{# ══════════════════════════════════════════════════════════════ #}
+{#  #}
 <div class="scenario-card scenario-e">
     <div class="scenario-header">
         <div class="scenario-letter">E</div>
@@ -287,15 +287,15 @@
     </div>
 </div>
 
-{# ── Print hint ── #}
+{#  Print hint  #}
 <div class="info-box" style="margin-top:32px; display:flex; align-items:center; gap:14px;">
-    <span style="font-size:22px;">🖨️</span>
+    <span style="font-size:22px;"></span>
     <span>Print this page or share the link <strong>/scenarios</strong> with test participants.
     Each scenario card is designed to be read independently.</span>
 </div>
 
 <style>
-/* ── Scenario cards ── */
+/*  Scenario cards  */
 .scenario-card {
     background: white;
     border-radius: 16px;
@@ -442,7 +442,7 @@ code.login-val {
 .scenario-tasks strong { color: var(--primary); }
 .scenario-tasks em { color: var(--text-secondary); font-style: normal; font-weight: 600; }
 
-/* ── Responsive collapse ── */
+/*  Responsive collapse  */
 @media (max-width: 900px) {
     .scenario-body {
         grid-template-columns: 1fr;

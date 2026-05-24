@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{# ── Derive current value from updates list (not stored on kpi row) ── #}
+{#  Derive current value from updates list (not stored on kpi row)  #}
 {% set ns = namespace(current=0, last_date='Never') %}
 {% for u in updates %}
     {% set ns.current = u['value'] %}
@@ -15,7 +15,7 @@
 {% set pct      = pct_raw if pct_raw <= 100 else 100 %}
 {% set achieved = ns.current >= kpi['target_value'] and updates|length > 0 %}
 
-{# ── Breadcrumb & header ── #}
+{#  Breadcrumb & header  #}
 <div class="page-header">
     <div>
         <div class="breadcrumb">
@@ -35,38 +35,38 @@
         {% if updates|length == 0 %}
         <span class="badge badge-gray" style="font-size:13px; padding:8px 16px;">No Updates Yet</span>
         {% elif achieved %}
-        <span class="badge badge-success" style="font-size:13px; padding:8px 16px;">✓ Achieved</span>
+        <span class="badge badge-success" style="font-size:13px; padding:8px 16px;">Achieved</span>
         {% else %}
-        <span class="badge badge-warning" style="font-size:13px; padding:8px 16px;">● In Progress</span>
+        <span class="badge badge-warning" style="font-size:13px; padding:8px 16px;">In Progress</span>
         {% endif %}
     </div>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
     <div class="stat-card">
-        <div class="stat-icon si-blue">🎯</div>
+        <div class="stat-icon si-blue"></div>
         <div>
             <div class="stat-value">{{ kpi['target_value'] }}</div>
             <div class="stat-label">Target ({{ kpi['unit'] }})</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon {{ 'si-green' if achieved else ('si-amber' if pct >= 50 else 'si-red') }}">📈</div>
+        <div class="stat-icon {{ 'si-green' if achieved else ('si-amber' if pct >= 50 else 'si-red') }}"></div>
         <div>
             <div class="stat-value">{{ ns.current if updates|length > 0 else '—' }}</div>
             <div class="stat-label">Current ({{ kpi['unit'] }})</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon {{ 'si-green' if pct >= 80 else ('si-amber' if pct >= 50 else 'si-red') }}">⚡</div>
+        <div class="stat-icon {{ 'si-green' if pct >= 80 else ('si-amber' if pct >= 50 else 'si-red') }}"></div>
         <div>
             <div class="stat-value">{{ pct | int }}%</div>
             <div class="stat-label">Progress</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-navy">📅</div>
+        <div class="stat-icon si-navy"></div>
         <div>
             <div class="stat-value" style="font-size:13px; line-height:1.4;">{{ kpi['deadline'] or '—' }}</div>
             <div class="stat-label">Deadline</div>
@@ -74,7 +74,7 @@
     </div>
 </div>
 
-{# ── Progress bar ── #}
+{#  Progress bar  #}
 <div class="card" style="margin-bottom:24px;">
     <div class="card-body">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -92,26 +92,26 @@
     </div>
 </div>
 
-{# ── AI Analysis buttons ── #}
+{#  AI Analysis buttons  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">🤖</span> AI Analysis</h2>
+    <h2 class="section-title"><span class="section-icon"></span> AI Analysis</h2>
 </div>
 <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
     <button class="btn-ai" id="btn-forecast" onclick="runForecast()">
-        <span id="forecast-btn-icon">📊</span> Run KPI Forecast
+        <span id="forecast-btn-icon"></span> Run KPI Forecast
     </button>
     <button class="btn-ai btn-ai-purple" id="btn-behaviour" onclick="runBehaviour()">
-        <span id="behaviour-btn-icon">🧠</span> Behaviour Analysis
+        <span id="behaviour-btn-icon"></span> Behaviour Analysis
     </button>
 </div>
 
-{# ── Forecast panel ── #}
+{#  Forecast panel  #}
 <div id="forecast-panel" class="ai-panel" style="display:none; margin-bottom:20px;">
     <div class="ai-panel-header">
-        <span class="ai-panel-icon">📊</span>
+        <span class="ai-panel-icon"></span>
         <strong>KPI Forecast</strong>
         <span id="forecast-status-badge" class="badge" style="margin-left:8px;"></span>
-        <button class="ai-panel-close" onclick="closePanel('forecast-panel')">✕</button>
+        <button class="ai-panel-close" onclick="closePanel('forecast-panel')"></button>
     </div>
     <div id="forecast-loading" class="ai-loading">
         <div class="spinner"></div> Generating forecast…
@@ -143,13 +143,13 @@
     </div>
 </div>
 
-{# ── Behaviour Analysis panel ── #}
+{#  Behaviour Analysis panel  #}
 <div id="behaviour-panel" class="ai-panel" style="display:none; margin-bottom:24px;">
     <div class="ai-panel-header">
-        <span class="ai-panel-icon">🧠</span>
+        <span class="ai-panel-icon"></span>
         <strong>Behaviour Analysis</strong>
         <span id="behaviour-risk-badge" class="badge" style="margin-left:8px;"></span>
-        <button class="ai-panel-close" onclick="closePanel('behaviour-panel')">✕</button>
+        <button class="ai-panel-close" onclick="closePanel('behaviour-panel')"></button>
     </div>
     <div id="behaviour-loading" class="ai-loading">
         <div class="spinner"></div> Analysing behaviour patterns…
@@ -192,10 +192,10 @@
     </div>
 </div>
 
-{# ── Update form (employee only) ── #}
+{#  Update form (employee only)  #}
 {% if user['role'] == 'employee' %}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">✏️</span> Log an Update</h2>
+    <h2 class="section-title"><span class="section-icon"></span> Log an Update</h2>
 </div>
 
 <div class="form-card" style="margin: 0 0 32px;">
@@ -218,9 +218,9 @@
 </div>
 {% endif %}
 
-{# ── History ── #}
+{#  History  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">🕐</span> Update History</h2>
+    <h2 class="section-title"><span class="section-icon"></span> Update History</h2>
 </div>
 
 {% if updates %}
@@ -251,7 +251,7 @@
 </div>
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">📝</span>
+    <span class="empty-icon"></span>
     <h4>No updates yet</h4>
     <p>{% if user['role'] == 'employee' %}Log your first progress update using the form above.{% else %}The employee hasn't logged any updates yet.{% endif %}</p>
 </div>
@@ -303,9 +303,9 @@ const RISK_OPTIONS = {
 };
 
 function trendIcon(trend) {
-    if (trend === 'up')      return '↑ Rising';
-    if (trend === 'down')    return '↓ Declining';
-    return '→ Stable';
+    if (trend === 'up')      return 'Rising';
+    if (trend === 'down')    return 'Declining';
+    return 'Stable';
 }
 
 function riskBadgeClass(risk) {
@@ -322,11 +322,11 @@ function riskBadgeClass(risk) {
 
 function riskLabel(risk) {
     const map = {
-        low: '✓ Low Risk',
-        medium: '● Medium Risk',
-        medium_high: '⚠ Moderate-High Risk',
-        high: '⚠ High Risk',
-        critical: '✕ Critical',
+        low: 'Low Risk',
+        medium: 'Medium Risk',
+        medium_high: ' Moderate-High Risk',
+        high: ' High Risk',
+        critical: ' Critical',
         unknown: '? Unknown'
     };
     return map[risk] || risk;
@@ -369,10 +369,10 @@ async function runForecast() {
         loading.style.display = 'none';
         content.style.display = 'block';
     } catch (err) {
-        loading.innerHTML = `<span style="color:var(--danger);">⚠ Failed to load forecast: ${err.message}</span>`;
+        loading.innerHTML = `<span style="color:var(--danger);"> Failed to load forecast: ${err.message}</span>`;
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>📊</span> Re-run Forecast';
+        btn.innerHTML = '<span></span> Re-run Forecast';
     }
 }
 
@@ -420,10 +420,10 @@ async function runBehaviour() {
         loading.style.display = 'none';
         content.style.display = 'block';
     } catch (err) {
-        loading.innerHTML = `<span style="color:var(--danger);">⚠ Failed to load analysis: ${err.message}</span>`;
+        loading.innerHTML = `<span style="color:var(--danger);"> Failed to load analysis: ${err.message}</span>`;
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>🧠</span> Re-run Analysis';
+        btn.innerHTML = '<span></span> Re-run Analysis';
     }
 }
 

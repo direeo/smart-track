@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <h1 class="page-header-title">My Dashboard</h1>
@@ -14,10 +14,10 @@
     </div>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon si-blue">📁</div>
+        <div class="stat-icon si-blue"></div>
         <div>
             <div class="stat-value">{{ projects | length }}</div>
             <div class="stat-label">Projects</div>
@@ -26,7 +26,7 @@
     {% set ns = namespace(total_kpis=0) %}
     {% for p in projects %}{% set ns.total_kpis = ns.total_kpis + p['my_kpi_count'] %}{% endfor %}
     <div class="stat-card">
-        <div class="stat-icon si-navy">📊</div>
+        <div class="stat-icon si-navy"></div>
         <div>
             <div class="stat-value">{{ ns.total_kpis }}</div>
             <div class="stat-label">My KPIs</div>
@@ -34,7 +34,7 @@
     </div>
     {% set active_count = projects | selectattr('status', 'equalto', 'active') | list | length %}
     <div class="stat-card">
-        <div class="stat-icon si-green">🔄</div>
+        <div class="stat-icon si-green"></div>
         <div>
             <div class="stat-value">{{ active_count }}</div>
             <div class="stat-label">Active Projects</div>
@@ -42,7 +42,7 @@
     </div>
     {% set done_count = projects | selectattr('status', 'equalto', 'completed') | list | length %}
     <div class="stat-card">
-        <div class="stat-icon si-amber">✅</div>
+        <div class="stat-icon si-amber"></div>
         <div>
             <div class="stat-value">{{ done_count }}</div>
             <div class="stat-label">Completed</div>
@@ -50,9 +50,9 @@
     </div>
 </div>
 
-{# ── My Projects ── #}
+{#  My Projects  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">📁</span> My Projects</h2>
+    <h2 class="section-title"><span class="section-icon"></span> My Projects</h2>
 </div>
 
 {% if projects %}
@@ -70,23 +70,23 @@
             <span class="badge {{ 'badge-success' if project['status'] == 'completed' else 'badge-primary' }}" style="font-size:11px;">
                 {{ project['status'] | title }}
             </span>
-            <span class="project-arrow">View →</span>
+            <span class="project-arrow">View </span>
         </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">📋</span>
+    <span class="empty-icon"></span>
     <h4>No projects yet</h4>
     <p>You haven't been assigned to any projects. Check back soon.</p>
 </div>
 {% endif %}
 
-{# ── Tip card for navigating KPIs ── #}
+{#  Tip card for navigating KPIs  #}
 {% if projects | length > 0 %}
 <div class="info-box" style="margin-top:24px; display:flex; align-items:center; gap:12px;">
-    <span style="font-size:20px;">💡</span>
+    <span style="font-size:20px;"></span>
     <span>Click any project above to view your KPIs and log progress updates.</span>
 </div>
 {% endif %}

@@ -3,13 +3,13 @@
 
 {% block content %}
 
-{# ── Aggregate stats from projects ── #}
+{#  Aggregate stats from projects  #}
 {% set ns = namespace(total_members=0) %}
 {% for p in projects %}
     {% set ns.total_members = ns.total_members + p['member_count'] %}
 {% endfor %}
 
-{# ── Page header ── #}
+{#  Page header  #}
 <div class="page-header">
     <div>
         <h1 class="page-header-title">Manager Dashboard</h1>
@@ -18,28 +18,28 @@
         </p>
     </div>
     <div class="page-header-actions">
-        <a href="/manager/project/new"><button>＋ New Project</button></a>
+        <a href="/manager/project/new"><button>+ New Project</button></a>
     </div>
 </div>
 
-{# ── Stat cards ── #}
+{#  Stat cards  #}
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon si-blue">📁</div>
+        <div class="stat-icon si-blue"></div>
         <div>
             <div class="stat-value">{{ projects | length }}</div>
             <div class="stat-label">Projects</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-purple">👥</div>
+        <div class="stat-icon si-purple"></div>
         <div>
             <div class="stat-value">{{ ns.total_members }}</div>
             <div class="stat-label">Team Slots</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-green">✅</div>
+        <div class="stat-icon si-green"></div>
         <div>
             {% set active_count = projects | selectattr('status', 'equalto', 'active') | list | length %}
             <div class="stat-value">{{ active_count }}</div>
@@ -47,7 +47,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-amber">📊</div>
+        <div class="stat-icon si-amber"></div>
         <div>
             {% set done_count = projects | selectattr('status', 'equalto', 'completed') | list | length %}
             <div class="stat-value">{{ done_count }}</div>
@@ -56,10 +56,10 @@
     </div>
 </div>
 
-{# ── Projects ── #}
+{#  Projects  #}
 <div class="section-header">
-    <h2 class="section-title"><span class="section-icon">📁</span> My Projects</h2>
-    <a href="/manager/project/new" class="btn btn-sm">＋ New Project</a>
+    <h2 class="section-title"><span class="section-icon"></span> My Projects</h2>
+    <a href="/manager/project/new" class="btn btn-sm">+ New Project</a>
 </div>
 
 {% if projects %}
@@ -78,14 +78,14 @@
                 <strong>{{ project['member_count'] }}</strong> member{{ 's' if project['member_count'] != 1 }}
                 · Due {{ project['end_date'] }}
             </span>
-            <span class="project-arrow">Manage →</span>
+            <span class="project-arrow">Manage </span>
         </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
 <div class="empty-state">
-    <span class="empty-icon">📋</span>
+    <span class="empty-icon"></span>
     <h4>No projects yet</h4>
     <p>Create your first project to start assigning KPIs to your team.</p>
 </div>
