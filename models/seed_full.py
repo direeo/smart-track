@@ -644,3 +644,158 @@ def ensure_test_accounts():
     conn.commit()
     conn.close()
     print("[OK] Test accounts ensured (20 isolated tester accounts)", flush=True)
+
+
+def ensure_demo_accounts():
+    """
+    Create a clean demo company (Apex Dynamics Ltd / DEMO01) with
+    perfectly staged data for a 2-minute video demo.
+
+    Accounts:
+        demo_admin   / Demo2024  — admin
+        demo_mgr     / Demo2024  — manager (Sales dept)
+        demo_emp     / Demo2024  — employee (Sales dept, on-track KPI)
+        demo_emp2    / Demo2024  — employee (Sales dept, at-risk KPI)
+    """
+    conn = get_conn()
+    today = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+
+    # ── helpers ──────────────────────────────────────────────────────────────
+    def _company(name, code):
+        row = conn.execute("SELECT id FROM companies WHERE code=?", (code,)).fetchone()
+        if row:
+            return row[0]
+        conn.execute("INSERT INTO companies (name, code) VALUES (?,?)", (name, code))
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _dept(name, cid):
+        row = conn.execute(
+            "SELECT id FROM departments WHERE name=? AND company_id=?", (name, cid)
+        ).fetchone()
+        if row:
+            return row[0]
+        conn.execute("INSERT INTO departments (name, company_id) VALUES (?,?)", (name, cid))
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _user(uname, pw, full, role, did, cid):
+        row = conn.execute("SELECT id FROM users WHERE username=?", (uname,)).fetchone()
+        if row:
+            conn.execute(
+                "UPDATE users SET password=?,full_name=?,role=?,department_id=?,company_id=?"
+                " WHERE username=?",
+                (hash_pw(pw), full, role, did, cid, uname)
+            )
+            return row[0]
+        conn.execute(
+            "INSERT INTO users (username,password,full_name,role,department_id,company_id)"
+            " VALUES (?,?,?,?,?,?)",
+            (uname, hash_pw(pw), full, role, did, cid)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+    def _project(name, desc, start, end, status, by, did, cid):
+        row = conn.execute(
+            "SELECT id FROM projects WHERE name=? AND company_id=? AND created_by=?",
+            (name, cid, by)
+        ).fetchone()
+        if row:
+            return row[0], False
+        conn.execute(
+            "INSERT INTO projects (name,description,start_date,end_date,status,"
+            "created_by,department_id,company_id) VALUES (?,?,?,?,?,?,?,?)",
+            (name, desc, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"),
+             status, by, did, cid)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0], True
+
+    def _member(pid, uid):
+        conn.execute(
+            "INSERT OR IGNORE INTO project_members (project_id, user_id) VALUES (?,?)",
+            (pid, uid)
+        )
+
+    def _kpi(title, desc, target, unit, deadline, by, assigned, pid, did):
+        row = conn.execute(
+            "SELECT id FROM kpis WHERE title=? AND project_id=? AND assigned_to=?",
+            (title, pid, assigned)
+        ).fetchone()
+        if row:
+            return row[0], False
+        conn.execute(
+            "INSERT INTO kpis (title,description,target_value,unit,deadline,"
+            "created_by,assigned_to,project_id,department_id) VALUES (?,?,?,?,?,?,?,?,?)",
+            (title, desc, target, unit, deadline.strftime("%Y-%m-%d"),
+             by, assigned, pid, did)
+        )
+        return conn.execute("SELECT last_insert_rowid()").fetchone()[0], True
+
+    def _updates(kid, entries):
+        if conn.execute(
+            "SELECT COUNT(*) FROM kpi_updates WHERE kpi_id=?", (kid,)
+        ).fetchone()[0]:
+            return
+        for val, dt, note in entries:
+            conn.execute(
+                "INSERT INTO kpi_updates (kpi_id,value,note,updated_at) VALUES (?,?,?,?)",
+                (kid, val, note, dt.strftime("%Y-%m-%d %H:%M:%S"))
+            )
+
+    # ── Company + departments ────────────────────────────────────────────────
+    cid   = _company("Apex Dynamics Ltd", "DEMO01")
+    sales = _dept("Sales", cid)
+    _dept("Engineering", cid)
+    _dept("Operations", cid)
+
+    # ── Users ────────────────────────────────────────────────────────────────
+    adm   = _user("demo_admin", "Demo2024", "Alex Morgan",    "admin",    None,  cid)
+    mgr   = _user("demo_mgr",   "Demo2024", "Jordan Clarke",  "manager",  sales, cid)
+    emp   = _user("demo_emp",   "Demo2024", "Riley Johnson",  "employee", sales, cid)
+    emp2  = _user("demo_emp2",  "Demo2024", "Casey Williams", "employee", sales, cid)
+
+    # ── Project ──────────────────────────────────────────────────────────────
+    ps = today - timedelta(days=40)
+    pe = today + timedelta(days=25)
+
+    proj_id, _ = _project(
+        "Q2 Sales Drive",
+        "Close new client deals and grow the pipeline to hit Q2 revenue targets.",
+        ps, pe, "active", mgr, sales, cid
+    )
+    for uid in [mgr, emp, emp2]:
+        _member(proj_id, uid)
+
+    # ── KPI 1 (demo_emp) — on track, rich history, ideal for forecast demo ──
+    k1, n1 = _kpi(
+        "Close new client deals",
+        "Convert qualified leads into signed contracts before the Q2 deadline.",
+        30, "deals", pe, mgr, emp, proj_id, sales
+    )
+    if n1:
+        _updates(k1, [
+            (2,  ps+timedelta(days=3),  "Early momentum - two quick wins"),
+            (5,  ps+timedelta(days=8),  "Referral network paying off"),
+            (8,  ps+timedelta(days=13), "Consistent pipeline conversion"),
+            (12, ps+timedelta(days=18), "Strong mid-sprint push"),
+            (16, ps+timedelta(days=24), "Well ahead at the halfway mark"),
+            (20, ps+timedelta(days=30), "Closing in - 10 left with 25 days"),
+            (23, ps+timedelta(days=37), "Nearly there - very comfortable"),
+        ])
+
+    # ── KPI 2 (demo_emp2) — at risk, for behaviour analysis demo ────────────
+    k2, n2 = _kpi(
+        "Submit sales proposals",
+        "Prepare and submit tailored proposals to all qualified prospects.",
+        40, "proposals", pe, mgr, emp2, proj_id, sales
+    )
+    if n2:
+        _updates(k2, [
+            (1,  ps+timedelta(days=6),  "Slow start - still learning the process"),
+            (3,  ps+timedelta(days=13), "Some templates built but low output"),
+            (5,  ps+timedelta(days=20), "Picking up slightly"),
+            (8,  ps+timedelta(days=28), "Progress but still well behind"),
+            (10, ps+timedelta(days=36), "Only 10 of 40 with 25 days left"),
+        ])
+
+    conn.commit()
+    conn.close()
+    print("[OK] Demo accounts ensured (Apex Dynamics Ltd / DEMO01)", flush=True)
