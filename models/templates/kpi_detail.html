@@ -127,7 +127,7 @@
                 <div class="ai-stat-value" id="fc-target">—</div>
             </div>
             <div class="ai-stat">
-                <div class="ai-stat-label">Forecast (next period)</div>
+                <div class="ai-stat-label">Projected at Deadline</div>
                 <div class="ai-stat-value" id="fc-forecast">—</div>
             </div>
             <div class="ai-stat">
@@ -351,19 +351,21 @@ async function runForecast() {
 
         document.getElementById('fc-current').textContent    = `${d.current} ${UNIT}`;
         document.getElementById('fc-target').textContent     = `${d.target} ${UNIT}`;
-        document.getElementById('fc-forecast').textContent   = `${d.forecast !== undefined ? d.forecast.toFixed(1) : '—'} ${UNIT}`;
-        document.getElementById('fc-trend').textContent      = trendIcon(d.trend);
-        document.getElementById('fc-confidence').textContent = d.confidence !== undefined
-            ? `${(d.confidence * 100).toFixed(0)}%` : '—';
+        const projVal = d.projected_at_deadline !== undefined ? d.projected_at_deadline : d.forecast;
+        document.getElementById('fc-forecast').textContent   = projVal !== undefined ? `${projVal.toFixed(1)} ${UNIT}` : '—';
+        document.getElementById('fc-trend').textContent      = d.deadline_passed ? 'N/A' : trendIcon(d.trend);
+        document.getElementById('fc-confidence').textContent = d.deadline_passed ? 'N/A' :
+            (d.confidence !== undefined ? `${(d.confidence * 100).toFixed(0)}%` : '—');
 
         const recEl = document.getElementById('fc-recommendation');
         recEl.innerHTML = `<strong>Analysis:</strong> ${d.recommendation || '—'}`;
 
         const statusBadge = document.getElementById('forecast-status-badge');
-        statusBadge.textContent = d.status === 'success' ? 'ARIMA Model' :
-                                   d.status === 'simple_trend' ? 'Linear Trend' :
+        statusBadge.textContent = d.deadline_passed ? 'Deadline Passed' :
+                                   d.status === 'success' ? 'AI Forecast' :
                                    d.status === 'insufficient_data' ? 'Insufficient Data' : d.status;
-        statusBadge.className = 'badge ' + (d.status === 'success' ? 'badge-success' :
+        statusBadge.className = 'badge ' + (d.deadline_passed ? 'badge-danger' :
+                                             d.status === 'success' ? 'badge-success' :
                                              d.status === 'error' ? 'badge-danger' : 'badge-warning');
 
         loading.style.display = 'none';
